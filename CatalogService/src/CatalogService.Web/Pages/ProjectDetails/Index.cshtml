@@ -1,0 +1,39 @@
+﻿@page "{ProjectId}"
+@model CatalogService.Web.Pages.ToDoRazorPage.IndexModel
+
+@{
+    ViewData["Title"] = "Category Details (Razor Page)";
+}
+
+
+<h2>Project (Razor Page)</h2>
+
+<h3>Name: @Model.Category?.Name</h3>
+
+        @if (Model.Category != null)
+        {
+            <table>
+                <thead>
+                    <tr>
+                        <th>Items</th>
+                    </tr>
+                </thead>
+            @foreach (var item in Model.Category.Items)
+            {
+                <tr>
+                    <td>@item.Image.GenerateHtmlTag()</td>
+                    <td>
+                        <ul>
+                            <li>Title: @item.Name</li>
+                            <li>Description: @item.Description</li>
+                            <li>Amount: @item.Amount</li>
+                            <li>Price: @item.Price</li>
+                            <li>Description: @item.Description</li>
+                        </ul>                        
+                    </td>                   
+                </tr>
+            }
+            </table>
+        }
+
+
