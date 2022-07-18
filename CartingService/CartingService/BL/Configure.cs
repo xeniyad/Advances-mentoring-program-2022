@@ -1,5 +1,8 @@
 ﻿using Carting.DL;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +17,9 @@ namespace Carting.BL
         public static void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<ICartingRepository, CartingRepository>();
+            services.AddScoped<CartingContext, CartingContext>();
+            services.AddDbContext<CartingContext>();
+            services.AddScoped<DbInitializer>();
         }
     }
 }
