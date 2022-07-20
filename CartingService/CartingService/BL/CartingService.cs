@@ -7,30 +7,29 @@ namespace Carting.BL
 {
     public class CartingService
     {
-        private readonly ILogger _logger;
         private readonly ICartingRepository _repository;
 
-        public CartingService(ICartingRepository repository, ILogger logger)
+        public CartingService(ICartingRepository repository)
         {
             _repository = repository;
-            _logger = logger;  
         }
 
-        public async Task AddItemAsync(Guid cartId, Item item)
+        public async Task<Item> AddItemAsync(Guid cartId, Item item)
         {
             var cart = await _repository.GetCartAsync(cartId);
             if (cart == null)
             {
                 cart = await InitializeCartAsync(cartId, item);
             }
+            var existingItem = cart.Items.Find(i => i.Id == item.Id);
+            if (existingItem != null)
+            {
+                await _repository.UpdateItemQuantityAsync(cartId, existingItem.Id, item.Quantity);
+                return item;
+            }
             else
             {
-                var existingItem = cart.Items.Find(i => i.Id == item.Id);
-                if (existingItem != null)
-                    await _repository.UpdateItemQuantityAsync(cartId, existingItem.Id, item.Quantity);
-                else
-                    await _repository.AddItemToCartAsync(cartId, item);
-
+                return await _repository.AddItemToCartAsync(cartId, item);
             }
         }
         public async Task<IList<Item>> GetCartItemsAsync(Guid cartId)
@@ -38,11 +37,16 @@ namespace Carting.BL
             var cart = await _repository.GetCartAsync(cartId);
             if (cart == null)
             {
-                _logger.LogWarning($"No cart with {cartId} found");
                 return new List<Item>();
             }
             else
                 return cart.Items;
+
+        }
+
+        public async Task<Cart> GetCartAsync(Guid cartId)
+        {
+            return await _repository.GetCartAsync(cartId);
 
         }
         public async Task<Cart> InitializeCartAsync(Guid cartId, Item item = null)
@@ -61,9 +65,9 @@ namespace Carting.BL
 
             return cart;
         }
-        public async Task RemoveItemAsync(Guid cartId, int itemId)
+        public async Task<bool> RemoveItemAsync(Guid cartId, int itemId)
         {
-            await _repository.RemoveItemFromCartAsync(cartId, itemId);
+            return await _repository.RemoveItemFromCartAsync(cartId, itemId);
         }
     }
 }

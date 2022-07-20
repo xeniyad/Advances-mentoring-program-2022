@@ -11,107 +11,135 @@ namespace Carting.DL
 {
     public class CartingRepository :  ICartingRepository
     {
-        
-        private readonly CartingContext _db;
 
-        public CartingRepository(CartingContext db)
+        public bool EnsureDbCreated()
         {
-            _db = db;
+            using (var db = new CartingContext())
+            {
+                return db.Database.EnsureCreated();
+            }
         }
 
-        public async Task AddItemToCartAsync(Guid id, Item item)
+        public bool IsHasData()
         {
-            var cart = await _db.Carts.Include(c => c.Items).FirstOrDefaultAsync(c => c.Id == id);
-            if (cart == null)
+            using (var db = new CartingContext())
             {
-                cart = await CreateCartAsync(id);
+                return db.Carts.Any();
             }
-            else
+        }
+
+        public async Task<Item> AddItemToCartAsync(Guid id, Item item)
+        {
+            using (var db = new CartingContext())
             {
-                var existingItem = cart.Items.Find(i => i.Id == item.Id);
-                if (existingItem != null)
+                var cart = await db.Carts.Include(c => c.Items).FirstOrDefaultAsync(c => c.Id == id);
+                if (cart == null)
                 {
-                    existingItem.Quantity += item.Quantity;
+                    cart = await CreateCartAsync(id);
                 }
                 else
                 {
-                    cart.Items.Add(item);
+                    var existingItem = cart.Items.Find(i => i.Id == item.Id);
+                    if (existingItem != null)
+                    {
+                        existingItem.Quantity += item.Quantity;
+                    }
+                    else
+                    {
+                        item.Cart = cart;
+                        db.Items.Add(item);
+                    }
+                    try
+                    {
+                        await db.SaveChangesAsync();
+                    }
+                    catch (DbUpdateConcurrencyException ex)
+                    {
+                        var entry = ex.Entries.Single();
+                        entry.OriginalValues.SetValues(entry.CurrentValues);
+                    }
                 }
+                return item;
+            }
+        }
+        public async Task<Cart> CreateCartAsync(Guid id)
+        {
+            using (var db = new CartingContext())
+            {
+                var cart = await GetCartAsync(id);
+                if (cart != null)
+                    return cart;
+
+                var newCart = new Cart() { Id = id, Items = new List<Item>() };
+                db.Carts.Add(newCart);
+
                 try
                 {
-                    await _db.SaveChangesAsync();
+                    await db.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException ex)
                 {
                     var entry = ex.Entries.Single();
                     entry.OriginalValues.SetValues(entry.CurrentValues);
                 }
+                return newCart;
             }
-        }
-        public async Task<Cart> CreateCartAsync(Guid id)
-        {
-            var cart = await GetCartAsync(id);
-            if (cart != null)
-                return cart;
-
-            var newCart = new Cart() { Id = id, Items = new List<Item>() };
-            _db.Carts.Add(newCart);
-
-            try
-            {
-                await _db.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException ex)
-            {
-                var entry = ex.Entries.Single();
-                entry.OriginalValues.SetValues(entry.CurrentValues);
-            }
-            return newCart;
         }
         public async Task<Cart> GetCartAsync(Guid id)
         {
-            var result = await _db.Carts.Include(c => c.Items).FirstOrDefaultAsync(c => c.Id == id);
-            return result;
-        }
-        public async Task RemoveItemFromCartAsync(Guid id, int itemId)
-        {
-            var cart = await GetCartAsync(id);
-            if (cart == null || !cart.Items.Exists(i => i.Id == itemId))
-                return;
-
-            cart.Items.RemoveAll(i => i.Id == itemId);
-            _db.Update(cart);
-
-            try
+            using (var db = new CartingContext())
             {
-                await _db.SaveChangesAsync();
+                var result = await db.Carts.Include(c => c.Items).FirstOrDefaultAsync(c => c.Id == id);
+                return result;
             }
-            catch (DbUpdateConcurrencyException ex)
+        }
+        public async Task<bool> RemoveItemFromCartAsync(Guid id, int itemId)
+        {
+            using (var db = new CartingContext())
             {
-                var entry = ex.Entries.Single();
-                entry.OriginalValues.SetValues(entry.CurrentValues);
+                var cart = await GetCartAsync(id);
+                if (cart == null || !cart.Items.Exists(i => i.Id == itemId))
+                    return false;
+
+                cart.Items.RemoveAll(i => i.Id == itemId);
+                db.Update(cart);
+
+                try
+                {
+                    await db.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    var entry = ex.Entries.Single();
+                    entry.OriginalValues.SetValues(entry.CurrentValues);
+                    return false;
+                }
+                return true;
             }
         }
         public async Task UpdateItemQuantityAsync(Guid id, int itemId, uint quantity)
         {
-            var cart = await GetCartAsync(id);
-            if (cart == null)
-                return;
-
-            var item = cart.Items.FirstOrDefault(i => i.Id == itemId);
-            if (item == null)
-                return;
-            item.Quantity += quantity;
-            _db.Update(item);
-
-            try
+            using (var db = new CartingContext())
             {
-                await _db.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException ex)
-            {
-                var entry = ex.Entries.Single();
-                entry.OriginalValues.SetValues(entry.CurrentValues);
+                var cart = await GetCartAsync(id);
+                if (cart == null)
+                    return;
+
+                var item = cart.Items.FirstOrDefault(i => i.Id == itemId);
+                if (item == null)
+                    return;
+                item.Quantity += quantity;
+                db.Update(item);
+
+                try
+                {
+                    await db.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    var entry = ex.Entries.Single();
+                    entry.OriginalValues.SetValues(entry.CurrentValues);
+                }
             }
         }
     }

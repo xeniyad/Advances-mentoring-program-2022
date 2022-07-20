@@ -7,8 +7,10 @@ namespace Carting.DL
     {
         Task<Cart> CreateCartAsync(Guid id);
         Task<Cart> GetCartAsync(Guid id);
-        Task AddItemToCartAsync(Guid id, Item item);
-        Task RemoveItemFromCartAsync(Guid id, int itemId);
+        Task<Item> AddItemToCartAsync(Guid id, Item item);
+        Task<bool> RemoveItemFromCartAsync(Guid id, int itemId);
         Task UpdateItemQuantityAsync(Guid id, int itemId, uint quantity);
+        bool EnsureDbCreated();
+        bool IsHasData();
     }
 }

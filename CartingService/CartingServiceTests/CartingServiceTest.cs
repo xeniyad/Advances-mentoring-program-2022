@@ -18,10 +18,17 @@ namespace Carting.Tests
         {
             var existingCartId = Guid.NewGuid();
 
-            var cartingRepository = new CartingRepository(context);
+            var cartingRepository = new CartingRepository();
             var logger = new FakeLogger();
-            var cartingService = new CartingService(cartingRepository, logger);
-            await cartingService.InitializeCartAsync(existingCartId, new Item { Name = "Bread", Id = 1, Price = new Money(2.2, Currency.USD), Quantity = 2, Image = null });
+            var cartingService = new CartingService(cartingRepository);
+            await cartingService.InitializeCartAsync(existingCartId, 
+                new Item {
+                    Name = "Bread", 
+                    Id = 1, 
+                    Price = new Money(2.2, Currency.USD), 
+                    Quantity = 2, 
+                    Image = null 
+                });
             await cartingService.AddItemAsync(existingCartId, new Item { Name = "Butter", Id = 2, Price = new Money(20.51, Currency.USD), Quantity = 4, Image = null });
 
             return existingCartId;
@@ -32,9 +39,9 @@ namespace Carting.Tests
         {
             using var factory = new CartingContextConnectionFactory();
             using var context = factory.CreateContext();
-            var cartingRepository = new CartingRepository(context);
+            var cartingRepository = new CartingRepository();
             var logger = new FakeLogger();
-            var cartingService = new CartingService(cartingRepository, logger);
+            var cartingService = new CartingService(cartingRepository);
             var guid = Guid.NewGuid();
             var item = new Item { Name = "Bread", Id = 1, Price = new Money(2.2, Currency.USD), Quantity = 2, Image = null };
 
@@ -48,9 +55,9 @@ namespace Carting.Tests
         {
             using var factory = new CartingContextConnectionFactory();
             using var context = factory.CreateContext();
-            var cartingRepository = new CartingRepository(context); 
+            var cartingRepository = new CartingRepository(); 
             var logger = new FakeLogger();
-            var cartingService = new CartingService(cartingRepository, logger);
+            var cartingService = new CartingService(cartingRepository);
 
             var existingCartId = await initializeExistingCart(context);
 
@@ -65,9 +72,9 @@ namespace Carting.Tests
         {
             using var factory = new CartingContextConnectionFactory();
             using var context = factory.CreateContext();
-            var cartingRepository = new CartingRepository(context);
+            var cartingRepository = new CartingRepository();
             var logger = new FakeLogger();
-            var cartingService = new CartingService(cartingRepository, logger);
+            var cartingService = new CartingService(cartingRepository);
             var existingCartId = await initializeExistingCart(context);
 
             var items = await cartingService.GetCartItemsAsync(existingCartId);
@@ -80,9 +87,9 @@ namespace Carting.Tests
         {
             using var factory = new CartingContextConnectionFactory();
             using var context = factory.CreateContext();
-            var cartingRepository = new CartingRepository(context);
+            var cartingRepository = new CartingRepository();
             var logger = new FakeLogger();
-            var cartingService = new CartingService(cartingRepository, logger);
+            var cartingService = new CartingService(cartingRepository);
             var itemToAdd = new Item { Name = "Milk", Id = 3, Price = new Money(5.1, Currency.USD), Quantity = 1, Image = null };
 
             var existingCartId = await initializeExistingCart(context);
@@ -97,9 +104,9 @@ namespace Carting.Tests
         {
             using var factory = new CartingContextConnectionFactory();
             using var context = factory.CreateContext();
-            var cartingRepository = new CartingRepository(context);
+            var cartingRepository = new CartingRepository();
             var logger = new FakeLogger();
-            var cartingService = new CartingService(cartingRepository, logger);
+            var cartingService = new CartingService(cartingRepository);
             var itemToAdd = new Item { Name = "Bread", Id = 1, Price = new Money(2.2, Currency.USD), Quantity = 3, Image = null };
 
             var existingCartId = await initializeExistingCart(context);
@@ -115,10 +122,10 @@ namespace Carting.Tests
         {
             using var factory = new CartingContextConnectionFactory();
             using var context = factory.CreateContext();
-            var cartingRepository = new CartingRepository(context);
+            var cartingRepository = new CartingRepository();
             var logger = new FakeLogger();
             var itemToRemove = new Item { Name = "Bread", Id = 1, Price = new Money(2.2, Currency.USD), Quantity = 2, Image = null };
-            var cartingService = new CartingService(cartingRepository, logger);
+            var cartingService = new CartingService(cartingRepository);
 
             var existingCartId = await initializeExistingCart(context); 
             await cartingService.RemoveItemAsync(existingCartId, itemToRemove.Id);
@@ -132,10 +139,10 @@ namespace Carting.Tests
         {
             using var factory = new CartingContextConnectionFactory();
             using var context = factory.CreateContext();
-            var cartingRepository = new CartingRepository(context);
+            var cartingRepository = new CartingRepository();
             var logger = new FakeLogger();
             var itemToRemove = new Item { Name = "Milk", Id = 3, Price = new Money(5.1, Currency.USD), Quantity = 1, Image = null };
-            var cartingService = new CartingService(cartingRepository, logger);
+            var cartingService = new CartingService(cartingRepository);
 
             var existingCartId = await initializeExistingCart(context); 
             await cartingService.RemoveItemAsync(existingCartId, itemToRemove.Id);
@@ -149,10 +156,10 @@ namespace Carting.Tests
         {
             using var factory = new CartingContextConnectionFactory();
             using var context = factory.CreateContext();
-            var cartingRepository = new CartingRepository(context);
+            var cartingRepository = new CartingRepository();
             var logger = new FakeLogger();
             var guid = Guid.NewGuid();
-            var cartingService = new CartingService(cartingRepository, logger);
+            var cartingService = new CartingService(cartingRepository);
 
             var items = await cartingService.GetCartItemsAsync(Guid.NewGuid());
 
