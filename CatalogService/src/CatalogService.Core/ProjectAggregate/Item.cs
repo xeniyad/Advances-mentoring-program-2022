@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using CatalogService.Core.ValueObjects;
 using CatalogService.SharedKernel;
+using CatalogService.SharedKernel.Interfaces;
 
 namespace CatalogService.Core.ProjectAggregate;
 
@@ -23,5 +24,5 @@ public class Item : EntityBase
   public string? Image { get; set; }
   public Money Price { get; set; }
   public uint Amount { get; set; }
-
+  public Category Category { get; set; }
 }

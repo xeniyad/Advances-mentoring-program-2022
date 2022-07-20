@@ -5,6 +5,8 @@ using CatalogService.Core;
 using CatalogService.Infrastructure;
 using CatalogService.Infrastructure.Data;
 using CatalogService.Web;
+using CatalogService.Web.Setup;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using Serilog;
 
@@ -20,18 +22,20 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
   options.MinimumSameSitePolicy = SameSiteMode.None;
 });
 
-string connectionString = builder.Configuration.GetConnectionString("SqliteConnection");  //Configuration.GetConnectionString("DefaultConnection");
+string connectionString = builder.Configuration.GetConnectionString("DefaultConnection"); //builder.Configuration.GetConnectionString("SqliteConnection"); 
 
 builder.Services.AddDbContext(connectionString);
-
-builder.Services.AddControllersWithViews().AddNewtonsoftJson();
-builder.Services.AddRazorPages();
-
-builder.Services.AddSwaggerGen(c =>
+builder.Services.AddResponseCaching();
+builder.Services.AddControllers(options =>
 {
-  c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
-  c.EnableAnnotations();
-});
+  options.CacheProfiles.Add("Default10",
+      new CacheProfile()
+      {
+        Duration = 10
+      });
+}); 
+builder.Services.AddRazorPages();
+builder.Services.ConfigureApi();
 
 // add list services for diagnostic purposes - see https://github.com/ardalis/AspNetCoreStartupServices
 builder.Services.Configure<ServiceConfig>(config =>
@@ -49,7 +53,11 @@ builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder =>
 });
 
 //builder.Logging.AddAzureWebAppDiagnostics(); add this if deploying to Azure
-
+builder.Services.AddSwaggerGen(c =>
+{
+  c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+  c.EnableAnnotations();
+});
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -67,6 +75,7 @@ app.UseRouting();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseCookiePolicy();
+app.UseResponseCaching();
 
 // Enable middleware to serve generated Swagger as a JSON endpoint.
 app.UseSwagger();
@@ -100,3 +109,8 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
+
+namespace CatalogService.Web
+{
+  public partial class Program { }
+}

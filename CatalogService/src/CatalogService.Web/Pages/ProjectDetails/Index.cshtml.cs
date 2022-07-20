@@ -1,9 +1,10 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
+using CatalogService.Application.Categories.Models;
+using CatalogService.Core.Interfaces;
 using CatalogService.Core.ProjectAggregate;
 using CatalogService.Core.ProjectAggregate.Specifications;
 using CatalogService.SharedKernel.Interfaces;
-using CatalogService.Web.ApiModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
@@ -11,16 +12,16 @@ namespace CatalogService.Web.Pages.ToDoRazorPage;
 
 public class IndexModel : PageModel
 {
-  private readonly IRepository<Category> _repository;
+  private readonly ICategoryService _service;
 
   [BindProperty(SupportsGet = true)]
   public int CategoryId { get; set; }
 
-  public CategoryDTO? Category { get; set; }
+  public CategoryDetail? Category { get; set; }
 
-  public IndexModel(IRepository<Category> repository)
+  public IndexModel(ICategoryService service)
   {
-    _repository = repository;
+    _service = service;
   }
 
 }

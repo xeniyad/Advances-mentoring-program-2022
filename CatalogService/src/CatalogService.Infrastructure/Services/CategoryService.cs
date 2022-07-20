@@ -2,71 +2,75 @@
 using CatalogService.Core.Interfaces;
 using CatalogService.Core.ProjectAggregate;
 using CatalogService.Core.ProjectAggregate.Specifications;
+using CatalogService.Infrastructure.Data;
 using CatalogService.SharedKernel.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace CatalogService.Infrastructure.Services;
 public class CategoryService : ICategoryService
 {
-  private readonly IRepository<Category> _repository;
+  private readonly AppDbContext _context;
 
-  public CategoryService(IRepository<Category> repository)
+  public CategoryService(AppDbContext context)
   {
-    _repository = repository;
+    _context = context;
   }
-  public async Task AddCategory(string name, int? parentId, string? image)
+  public async Task<Category> AddCategory(string name, int? parentId, string? image)
   {
     var category = new Category(name, parentId, image);
-    await _repository.AddAsync(category);
-    await _repository.SaveChangesAsync();
+    var createdCategory = await _context.AddAsync(category);
+    await _context.SaveChangesAsync();
+    return category;
   }
 
   public async Task<Category> AddCategory(Category category)
   {    
-    var newCategory = await _repository.AddAsync(category);
-    await _repository.SaveChangesAsync();
-    return newCategory;
+    await _context.Categories.AddAsync(category);
+    await _context.SaveChangesAsync();
+    return category;
   }
 
   public async Task AddItemToCategory(int categoryId, Item item)
   {    
-    var category = await _repository.GetByIdAsync(categoryId);
+    var category = await _context.Categories.FindAsync(categoryId);
     if (category != null)
     {
       if (category.Items == null) { category.Items = new List<Item>(); }
       category.Items.Add(item);
-      await _repository.UpdateAsync(category);
-      await _repository.SaveChangesAsync();
+      await _context.SaveChangesAsync();
     }
   }
 
   public async Task DeleteCategory(int categoryId)
   {
-    var category = await _repository.GetByIdAsync(categoryId);
+    var category = await _context.Categories.FindAsync(categoryId);
     if (category != null)
     {
-      await _repository.DeleteAsync(category);
-      await _repository.SaveChangesAsync();
+      _context.Categories.Remove(category);
+      await _context.SaveChangesAsync();
     }
   }
 
   public async Task<List<Category>> GetAllCategories()
   {
-    return await _repository.ListAsync();
+    return await _context.Categories.ToListAsync();
   }
+
+
 
   public async Task<Category> GetCategory(int categoryId)
   {
-    var category = await _repository.GetByIdAsync(categoryId);
+    var category = await _context.Categories.FindAsync(categoryId);
 
     if (category == null) return Result<Category>.NotFound();
 
     return new Result<Category>(category);
   }
+   
 
-  public async Task<Category> GetCategoryWithItems(int categoryId)
+  public async Task<Category> GetCategoryWithAllItems(int categoryId)
   {
-    var spec = new CategoryByIdWithItemsSpec(categoryId);
-    var category = await _repository.GetBySpecAsync(spec);
+    var category = await _context.Categories.Include(c => c.Items).FirstAsync(c => c.Id == categoryId);
 
     // TODO: Optionally use Ardalis.GuardClauses Guard.Against.NotFound and catch
     if (category?.Items == null) return Result<Category>.NotFound();
@@ -74,13 +78,15 @@ public class CategoryService : ICategoryService
     return new Result<Category>(category);
   }
 
+
   public async Task UpdateCategory(Category category)
   {
-    var existCategory = await _repository.GetByIdAsync(category.Id);
+    var existCategory = await _context.Categories.FindAsync(category.Id);
     if (existCategory != null)
     {
-      await _repository.UpdateAsync(category);
-      await _repository.SaveChangesAsync();
+      existCategory = category;
+      _context.Entry(existCategory).State = EntityState.Modified;
+      await _context.SaveChangesAsync();
     } 
   }
 }

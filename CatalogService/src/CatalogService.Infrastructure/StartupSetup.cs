@@ -8,5 +8,5 @@ public static class StartupSetup
 {
   public static void AddDbContext(this IServiceCollection services, string connectionString) =>
       services.AddDbContext<AppDbContext>(options =>
-          options.UseSqlServer(@"Server=.\SQLEXPRESS;Database=catalogdb;Trusted_Connection=True;"));
+          options.UseSqlServer(@"Data Source=EPKZALMW0071;Initial Catalog=Catalog;Integrated Security=True;"));
 }
