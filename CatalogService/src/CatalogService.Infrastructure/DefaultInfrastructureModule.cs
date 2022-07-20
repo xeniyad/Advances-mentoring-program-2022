@@ -51,11 +51,6 @@ public class DefaultInfrastructureModule : Module
 
   private void RegisterCommonDependencies(ContainerBuilder builder)
   {
-    builder.RegisterGeneric(typeof(EfRepository<>))
-        .As(typeof(IRepository<>))
-        .As(typeof(IReadRepository<>))
-        .InstancePerLifetimeScope();
-
     builder
         .RegisterType<Mediator>()
         .As<IMediator>()
@@ -74,6 +69,8 @@ public class DefaultInfrastructureModule : Module
 
     builder.RegisterType<CategoryService>()
         .As<ICategoryService>().InstancePerLifetimeScope();
+    builder.RegisterType<ItemService>()
+        .As<IItemService>().InstancePerLifetimeScope();
 
     var mediatrOpenTypes = new[]
     {

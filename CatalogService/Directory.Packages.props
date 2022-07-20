@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Ardalis.ApiEndpoints" Version="4.0.1" />
@@ -22,6 +22,7 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.5" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.5" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.5" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />    
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
     <PackageVersion Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.5" />
     <PackageVersion Include="Moq" Version="4.18.1" />

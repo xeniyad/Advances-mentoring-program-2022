@@ -1,97 +1,118 @@
 ﻿using CatalogService.Core.Interfaces;
 using CatalogService.Core.ProjectAggregate;
-using CatalogService.Core.ProjectAggregate.Specifications;
-using CatalogService.SharedKernel.Interfaces;
-using CatalogService.Web.ApiModels;
+using CatalogService.Web.Models.Categories;
+using CatalogService.Application.Categories.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CatalogService.Web.Api;
 
-/// <summary>
-/// A sample API Controller. Consider using API Endpoints (see Endpoints folder) for a more SOLID approach to building APIs
-/// https://github.com/ardalis/ApiEndpoints
-/// </summary>
+[Route("api/v1/category")]
+[ApiController]
+[Produces("application/json", "application/xml")]
+[Consumes("application/json", "application/xml")]
 public class CategoriesController : BaseApiController
 {
   private readonly ICategoryService _categoryService;
+  private readonly IItemService _itemService;
+  private readonly CategoryResourceFactory _resourceFactory;
 
-  public CategoriesController(ICategoryService categoryService)
+  public CategoriesController(ICategoryService categoryService, IItemService itemService, CategoryResourceFactory resourceFactory)
   {
     _categoryService = categoryService ?? throw new ArgumentNullException(nameof(categoryService));
+    _itemService = itemService ?? throw new ArgumentNullException(nameof(itemService));
+    _resourceFactory = resourceFactory ?? throw new ArgumentNullException(nameof(resourceFactory));
   }
 
-  // GET: api/Categories
-  [HttpGet]
-  public async Task<IActionResult> List()
+  [HttpOptions(Name = nameof(GetCategoryOptions))]
+  public IActionResult GetCategoryOptions()
+  {
+    Response.Headers.Add("Allow", "GET,OPTIONS,POST,PUT,DELETE");
+
+    return Ok();
+  }
+
+  [HttpGet(Name = nameof(GetCategoriesList))]
+  [ProducesResponseType(StatusCodes.Status200OK)]
+  [ProducesResponseType(StatusCodes.Status400BadRequest)]
+  [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+  [ProducesResponseType(StatusCodes.Status415UnsupportedMediaType)]
+  [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+  [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+  [ResponseCache(CacheProfileName = "Default10")]
+  public async Task<IActionResult> GetCategoriesList()
   {
     var categories = await _categoryService.GetAllCategories();
-    var projectDTOs = categories
-        .Select(category => new CategoryDTO
-        (
-            id: category.Id,
-            name: category.Name
-        ))
-        .ToList();
 
-    return Ok(projectDTOs);
+    return Ok(_resourceFactory.CreateCategoryResourceList(categories));
   }
 
-
-  // POST: api/Categories
-  [HttpPost]
-  public async Task<IActionResult> Post([FromBody] CreateCategoryDTO request)
+  [Route("{categoryId}")]
+  [HttpGet("{categoryId:int}", Name = nameof(GetCategoryById))]
+  [ProducesResponseType(StatusCodes.Status200OK)]
+  [ProducesResponseType(StatusCodes.Status404NotFound)]
+  [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+  [ProducesResponseType(StatusCodes.Status415UnsupportedMediaType)]
+  [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+  public async Task<IActionResult> GetCategoryById([FromRoute] int categoryId)
   {
-    var newCategory = new Category(request.Name, request.ParentId);
-
-    var createdCategory = await _categoryService.AddCategory(newCategory);
-
-    var result = new CategoryDTO
-    (
-        id: createdCategory.Id,
-        name: createdCategory.Name
-    );
-    return Ok(result);
-  }
-
-  // GET: api/Projects
-  [HttpGet("{id:int}")]
-  public async Task<IActionResult> GetById(int id)
-  {
-    var category = await _categoryService.GetCategory(id);
+    var category = await _categoryService.GetCategory(categoryId);
 
     if (category == null) return NotFound();
 
-    var result = new CategoryDTO
-    (
-        id: category.Id,
-        name: category.Name,
-        parentId: category.ParentId,        
-        image: category.Image
-    );
-
-    return Ok(result);
+    return Ok(_resourceFactory.CreateCategoryResource(category));
   }
 
-  // Put: api/Categories
-  [HttpPut]
-  public async Task<IActionResult> Update([FromBody] CategoryDTO request)
+  [HttpPost(Name = nameof(CreateCategory))]
+  [ProducesResponseType(StatusCodes.Status201Created)]
+  [ProducesResponseType(StatusCodes.Status400BadRequest)]
+  [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+  [ProducesResponseType(StatusCodes.Status415UnsupportedMediaType)]
+  [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+  [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+  public async Task<IActionResult> CreateCategory([FromBody] CategoryForCreate category)
+  {
+    var newCategory = new Category(category.Name, category.ParentId, category.Image?.ToString());
+
+    var createdCategory = await _categoryService.AddCategory(newCategory);
+
+    return CreatedAtAction(
+        actionName: nameof(GetCategoryById),
+        routeValues: new { categoryId = createdCategory.Id },
+        value: _resourceFactory.CreateCategoryResource(createdCategory));
+  }
+
+  [HttpPut(Name = nameof(UpdateCategory))]
+  [ProducesResponseType(StatusCodes.Status204NoContent)]
+  [ProducesResponseType(StatusCodes.Status400BadRequest)]
+  [ProducesResponseType(StatusCodes.Status404NotFound)]
+  [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+  [ProducesResponseType(StatusCodes.Status415UnsupportedMediaType)]
+  [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+  [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+  public async Task<IActionResult> UpdateCategory([FromBody] CategoryForUpdate category)
   {
     var updatedCategory = new Category(
-      request.Id,
-      request.Name,
-      request.ParentId,
-      request.Image?.Url);
+      category.Id,
+      category.Name,
+      category.ParentId,
+      category.Image?.Url);
 
     await _categoryService.UpdateCategory(updatedCategory);
 
     return Ok();
   }
 
-  // Put: api/Categories
-  [HttpDelete("{id:int}")]
-  public async Task<IActionResult> Delete(int id)
+  [HttpDelete("{categoryId:int}", Name = nameof(DeleteCategory))]
+  [ProducesResponseType(StatusCodes.Status204NoContent)]
+  [ProducesResponseType(StatusCodes.Status404NotFound)]
+  [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+  [ProducesResponseType(StatusCodes.Status415UnsupportedMediaType)]
+  [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+  [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+  public async Task<IActionResult> DeleteCategory(int categoryId)
   {
-    await _categoryService.DeleteCategory(id);
+    await _itemService.DeleteCategoryItems(categoryId);
+    await _categoryService.DeleteCategory(categoryId);
 
     return Ok();
   }

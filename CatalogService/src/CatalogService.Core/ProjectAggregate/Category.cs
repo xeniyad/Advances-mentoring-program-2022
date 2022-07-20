@@ -4,7 +4,7 @@ using CatalogService.SharedKernel.Interfaces;
 
 namespace CatalogService.Core.ProjectAggregate;
 
-public class Category : EntityBase, IAggregateRoot
+public class Category : EntityBase
 {
   public string Name { get; private set; }
   public string? Image { get; private set; }
@@ -27,6 +27,8 @@ public class Category : EntityBase, IAggregateRoot
     Image = image;
     Items = new List<Item>();
   }
+
+  public Category() { }
 
   public void AddItem(Item newItem)
   {

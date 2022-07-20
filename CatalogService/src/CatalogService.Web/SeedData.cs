@@ -7,7 +7,7 @@ namespace CatalogService.Web;
 
 public static class SeedData
 {
-  public static readonly Category TestCategory1 = new Category("Test Project");
+  public static readonly Category TestCategory1 = new Category("Food");
   public static readonly Item Item1 = new Item
   {
     Name = "Bread",
