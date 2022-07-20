@@ -78,3 +78,8 @@ app.MapRazorPages();
 app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 
 app.Run();
+
+namespace Carting.API
+{
+    public partial class Program { }
+}

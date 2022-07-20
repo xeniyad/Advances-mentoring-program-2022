@@ -9,6 +9,7 @@ namespace Carting.DL
         public DbSet<Cart> Carts { get; set; }
         public DbSet<Item> Items { get; set; }
         public string DbPath { get; }
+
         public CartingContext()
         {
             var folder = Environment.SpecialFolder.LocalApplicationData;
