@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Carting.DL
 {
-    public class CartingRepository :  ICartingRepository
+    public class CartingRepository : ICartingRepository
     {
 
         public bool EnsureDbCreated()
@@ -98,11 +98,12 @@ namespace Carting.DL
             using (var db = new CartingContext())
             {
                 var cart = await GetCartAsync(id);
-                if (cart == null || !cart.Items.Exists(i => i.Id == itemId))
+                if (cart == null)
                     return false;
+                var item = cart.Items.First(i => i.Id == itemId);
 
-                cart.Items.RemoveAll(i => i.Id == itemId);
-                db.Update(cart);
+                if (item != null)
+                    db.Items.Remove(item);
 
                 try
                 {
