@@ -87,6 +87,7 @@ public class CategoryService : ICategoryService
       existCategory.UpdateName(category.Name);
       existCategory.ParentId = category.ParentId;
       existCategory.Image = category.Image;
+      _context.Categories.Update(existCategory);
       await _context.SaveChangesAsync();
     } 
   }

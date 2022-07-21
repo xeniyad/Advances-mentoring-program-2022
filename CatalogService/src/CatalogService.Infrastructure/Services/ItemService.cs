@@ -19,16 +19,18 @@ public class ItemService : IItemService
 
   public async Task UpdateItem(Item item, int categoryId)
   {
-    var category = await _context.Categories.Include(c => c.Items).FirstAsync(c => c.Id == categoryId);
-    var existingItem = category?.Items?.FirstOrDefault(i => i.Id == item.Id);
+    var existingItem = _context.Items.
+      FirstOrDefault(i => i.Id == item.Id && i.Category.Id == categoryId);
     if (existingItem != null)
     {
       existingItem.Name = item.Name;
+      existingItem.Description = item.Description;
       existingItem.Price = item.Price;
       existingItem.Image = item.Image;
       existingItem.Amount = item.Amount;
+      _context.Items.Update(existingItem);
+      await _context.SaveChangesAsync();
     }
-    await _context.SaveChangesAsync();
   }
   public async Task DeleteItem(int itemId)
   {
