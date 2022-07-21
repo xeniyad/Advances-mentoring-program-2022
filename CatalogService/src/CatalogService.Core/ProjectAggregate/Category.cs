@@ -7,7 +7,7 @@ namespace CatalogService.Core.ProjectAggregate;
 public class Category : EntityBase
 {
   public string Name { get; private set; }
-  public string? Image { get; private set; }
+  public string? Image { get; set; }
   public int? ParentId { get; set; }
   public List<Item>? Items { get; set; }
 

@@ -99,9 +99,10 @@ public class ItemsController : BaseApiController
   {
     var dbItem = new Item()
     {
+      Id = item.Id,
       Name = item.Name,
       Description = item.Description,
-      Image = item.Image?.ToString(),
+      Image = item.Image?.Url,
       Amount = item.Amount,
       Price = item.Price
     };
@@ -115,7 +116,7 @@ public class ItemsController : BaseApiController
   [ProducesResponseType(StatusCodes.Status404NotFound)]
   [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
   [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-  public async Task<IActionResult> DeleteItem(int categoryId, int itemId)
+  public async Task<IActionResult> DeleteItem(int itemId)
   {
     await _itemService.DeleteItem(itemId);
 
