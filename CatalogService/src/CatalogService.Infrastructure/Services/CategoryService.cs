@@ -84,8 +84,9 @@ public class CategoryService : ICategoryService
     var existCategory = await _context.Categories.FindAsync(category.Id);
     if (existCategory != null)
     {
-      existCategory = category;
-      _context.Entry(existCategory).State = EntityState.Modified;
+      existCategory.UpdateName(category.Name);
+      existCategory.ParentId = category.ParentId;
+      existCategory.Image = category.Image;
       await _context.SaveChangesAsync();
     } 
   }

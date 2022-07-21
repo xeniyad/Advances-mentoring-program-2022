@@ -1,15 +1,8 @@
 ﻿using CatalogService.Core.Interfaces;
 using CatalogService.Core.ProjectAggregate;
-using Microsoft.AspNetCore.TestHost;
-using CatalogService.Core.ValueObjects;
 using Moq;
 using Xunit;
 using System.Net;
-using Newtonsoft.Json;
-using Ardalis.GuardClauses;
-using Ardalis.Result;
-using Microsoft.VisualStudio.TestPlatform.TestHost;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Mvc.Testing;
 

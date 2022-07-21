@@ -115,7 +115,7 @@ public class ItemsController : BaseApiController
   [ProducesResponseType(StatusCodes.Status404NotFound)]
   [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
   [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-  public async Task<IActionResult> DeleteItem(int categoryId, int itemId)
+  public async Task<IActionResult> DeleteItem(int itemId)
   {
     await _itemService.DeleteItem(itemId);
 
