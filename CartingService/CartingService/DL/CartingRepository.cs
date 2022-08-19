@@ -143,5 +143,41 @@ namespace Carting.DL
                 }
             }
         }
+
+        public async Task<IList<Cart>> GetAllCarts()
+        {
+            using (var db = new CartingContext())
+            {
+                var result = await db.Carts.Include(c => c.Items).ToListAsync();
+                return result;
+            }
+        }
+
+        public async Task UpdateItemAsync(Guid id, int itemId, Money price, string name)
+        {
+            using (var db = new CartingContext())
+            {
+                var cart = await GetCartAsync(id);
+                if (cart == null)
+                    return;
+
+                var item = cart.Items.FirstOrDefault(i => i.Id == itemId);
+                if (item == null)
+                    return;
+                item.Price =price;
+                item.Name = name;
+                db.Update(item);
+
+                try
+                {
+                    await db.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    var entry = ex.Entries.Single();
+                    entry.OriginalValues.SetValues(entry.CurrentValues);
+                }
+            }
+        }
     }
 }

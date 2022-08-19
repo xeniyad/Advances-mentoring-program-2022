@@ -2,6 +2,7 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Carting.API;
 using Carting.BL;
+using Carting.BL.EventBus;
 using Carting.DL;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -12,6 +13,14 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
+
+builder.Services.AddSingleton<IServiceBusPersisterConnection>(sp =>
+{
+    var serviceBusConnectionString = builder.Configuration["EventBusConnection"];
+
+    return new DefaultServiceBusPersisterConnection(serviceBusConnectionString);
+});
+
 Configure.ConfigureServices(builder.Services);
 
 // Add services to the container.
@@ -82,4 +91,7 @@ app.Run();
 namespace Carting.API
 {
     public partial class Program { }
+
 }
+
+

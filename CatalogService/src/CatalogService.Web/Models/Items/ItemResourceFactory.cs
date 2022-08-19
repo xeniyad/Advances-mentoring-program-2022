@@ -33,8 +33,7 @@ namespace CatalogService.Web.Models.Items;
     {      
       var itemResources = items
           .Select(item => CreateItemResource(item, categoryId))
-          .ToList();
-      
+          .ToList();      
 
       var routeName = $"api/v1/category/{categoryId}/items";
 
