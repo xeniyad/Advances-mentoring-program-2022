@@ -8,33 +8,38 @@ namespace Carting.DL
 {
     public class DbInitializer
     {
-        internal static void Initialize(ICartingRepository repository)
+        internal async static void Initialize(CartingContext context)
         {
-            repository.EnsureDbCreated();
-            if (repository.IsHasData()) return;
+            context.Database.EnsureCreated();
+            if (context.Carts.Any()) return;
 
             var cart1Id = new Guid("062383c6-60b0-474f-804a-8ee26d8f7868");
             var cart2Id = new Guid("b240b546-10a9-4f59-9e3c-6cae483e208e");
 
-            repository.CreateCartAsync(cart1Id);
-            repository.CreateCartAsync(cart2Id);
-
-            repository.AddItemToCartAsync(cart1Id, new Item
+            var cart1 = new Cart();
+            cart1.Id = cart1Id;
+            context.Carts.Add(cart1);
+            var item1 = new Item
             {
                 Name = "Bread",
-                Id = 1,
                 Price = new Money(2.2, Currency.USD),
                 Quantity = 2,
                 Image = null
-            });
-            repository.AddItemToCartAsync(cart1Id, new Item
+            };
+            var item2 = new Item
             {
                 Name = "Butter",
-                Id = 2,
                 Price = new Money(20.51, Currency.USD),
                 Quantity = 4,
                 Image = null
-            });
+            };
+            cart1.Items.Add(item1);
+            cart1.Items.Add(item2);
+
+            var cart2 = new Cart();
+            cart2.Id = cart2Id;
+            context.Carts.Add(cart2);
+            context.SaveChanges();
         }
     }
 }

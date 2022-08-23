@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Carting.BL.IntegrationEvents;
+using System;
 using System.Collections.Generic;
 using static Carting.BL.EventBus.InMemoryEventBusSubscriptionsManager;
 

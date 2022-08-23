@@ -101,7 +101,6 @@ public class ItemsController : BaseApiController
   [ProducesResponseType(StatusCodes.Status500InternalServerError)]
   public async Task<IActionResult> UpdateItem([FromRoute] int categoryId, [FromBody] ItemForUpdate item)
   {
-    var oldItem = await _itemService.GetItem(item.Id);
     var dbItem = new Item()
     {
       Id = item.Id,
@@ -114,13 +113,10 @@ public class ItemsController : BaseApiController
 
     await _itemService.UpdateItem(dbItem, categoryId);
 
-    if (oldItem != null && item != null && (oldItem.Price != item.Price || oldItem.Name != item.Name))
-    {
-      var itemChangedEvent = new ItemChangedIntegrationEvent(item.Id, item.Price, item.Name);   
+    var itemChangedEvent = new ItemChangedIntegrationEvent(item.Id, item.Price, item.Name);
 
-      // Publish through the Event Bus and mark the saved event as published
-      await _intergrationService.PublishThroughEventBusAsync(itemChangedEvent);
-    }
+    // Publish through the Event Bus and mark the saved event as published
+    await _intergrationService.PublishThroughEventBusAsync(itemChangedEvent);
 
     return Ok();
   }

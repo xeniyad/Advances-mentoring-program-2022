@@ -1,4 +1,6 @@
-﻿namespace Carting.BL.EventBus;
+﻿using Carting.BL.IntegrationEvents;
+
+namespace Carting.BL.EventBus;
 
 public interface IEventBus
 {
