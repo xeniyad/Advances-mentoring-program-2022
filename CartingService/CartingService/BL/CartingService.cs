@@ -32,6 +32,21 @@ namespace Carting.BL
                 return await _repository.AddItemToCartAsync(cartId, item);
             }
         }
+
+        public async Task<Item> UpdateItemAsync(Guid cartId, int itemId, Money itemPrice, string itemName)
+        {
+            var cart = await _repository.GetCartAsync(cartId);
+            if (cart != null)
+            {
+                var existingItem = cart.Items.Find(i => i.Id == itemId);
+                if (existingItem != null)
+                {
+                    await _repository.UpdateItemAsync(cartId, itemId, itemPrice, itemName);
+                }
+                return existingItem;
+            }
+            return null;
+        }
         public async Task<IList<Item>> GetCartItemsAsync(Guid cartId)
         {
             var cart = await _repository.GetCartAsync(cartId);
@@ -41,6 +56,18 @@ namespace Carting.BL
             }
             else
                 return cart.Items;
+
+        }
+
+        public async Task<IList<Cart>> GetAllCartsAsync()
+        {
+            var carts = await _repository.GetAllCarts();
+            if (carts == null)
+            {
+                return new List<Cart>();
+            }
+            else
+                return carts;
 
         }
 

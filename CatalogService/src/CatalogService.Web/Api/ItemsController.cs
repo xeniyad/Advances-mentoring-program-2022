@@ -3,6 +3,8 @@ using CatalogService.Core.ProjectAggregate;
 using Microsoft.AspNetCore.Mvc;
 using CatalogService.Web.Models.Items;
 using CatalogService.Application.Items.Models;
+using CatalogService.Web.Integration;
+using CatalogService.Application.IntegrationEvents;
 
 namespace CatalogService.Web.Api;
 
@@ -14,11 +16,13 @@ public class ItemsController : BaseApiController
 {
   private readonly IItemService _itemService;
   private readonly ItemResourceFactory _resourceFactory;
+  private readonly ICatalogIntegrationEventService _intergrationService;
 
-  public ItemsController(IItemService itemService, ItemResourceFactory resourceFactory)
+  public ItemsController(IItemService itemService, ItemResourceFactory resourceFactory, ICatalogIntegrationEventService catalogIntegrationEventService)
   {
     _itemService = itemService ?? throw new ArgumentNullException(nameof(itemService));
     _resourceFactory = resourceFactory ?? throw new ArgumentNullException(nameof(resourceFactory));
+    _intergrationService = catalogIntegrationEventService ?? throw new ArgumentNullException(nameof(catalogIntegrationEventService)); 
   }
 
   [HttpOptions(Name = nameof(GetItemOptions))]
@@ -97,6 +101,7 @@ public class ItemsController : BaseApiController
   [ProducesResponseType(StatusCodes.Status500InternalServerError)]
   public async Task<IActionResult> UpdateItem([FromRoute] int categoryId, [FromBody] ItemForUpdate item)
   {
+    var oldItem = await _itemService.GetItem(item.Id);
     var dbItem = new Item()
     {
       Id = item.Id,
@@ -108,6 +113,14 @@ public class ItemsController : BaseApiController
     };
 
     await _itemService.UpdateItem(dbItem, categoryId);
+
+    if (oldItem != null && item != null && (oldItem.Price != item.Price || oldItem.Name != item.Name))
+    {
+      var itemChangedEvent = new ItemChangedIntegrationEvent(item.Id, item.Price, item.Name);   
+
+      // Publish through the Event Bus and mark the saved event as published
+      await _intergrationService.PublishThroughEventBusAsync(itemChangedEvent);
+    }
 
     return Ok();
   }

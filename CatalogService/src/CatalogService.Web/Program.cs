@@ -2,9 +2,12 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using CatalogService.Core;
+using CatalogService.Core.Interfaces;
 using CatalogService.Infrastructure;
 using CatalogService.Infrastructure.Data;
+using CatalogService.Infrastructure.ServiceBus;
 using CatalogService.Web;
+using CatalogService.Web.Integration;
 using CatalogService.Web.Setup;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
@@ -15,6 +18,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 
 builder.Host.UseSerilog((_, config) => config.ReadFrom.Configuration(builder.Configuration));
+
+builder.Services.AddSingleton<IServiceBusPersisterConnection>(sp =>
+{
+  var serviceBusConnectionString = builder.Configuration["EventBusConnection"];
+
+  return new DefaultServiceBusPersisterConnection(serviceBusConnectionString);
+});
 
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
@@ -36,6 +46,20 @@ builder.Services.AddControllers(options =>
 }); 
 builder.Services.AddRazorPages();
 builder.Services.ConfigureApi();
+builder.Services.AddTransient<ICatalogIntegrationEventService, CatalogIntegrationEventService>();
+builder.Services.AddSingleton<IEventBus, EventBusServiceBus>(sp =>
+{
+  var serviceBusPersisterConnection = sp.GetRequiredService<IServiceBusPersisterConnection>();
+  var iLifetimeScope = sp.GetRequiredService<ILifetimeScope>();
+  var logger = sp.GetRequiredService<ILogger<EventBusServiceBus>>();
+  var eventBusSubcriptionsManager = sp.GetRequiredService<IEventBusSubscriptionsManager>();
+  string subscriptionName = builder.Configuration["SubscriptionClientName"];
+
+  return new EventBusServiceBus(serviceBusPersisterConnection, 
+      eventBusSubcriptionsManager, iLifetimeScope, subscriptionName);
+});
+
+builder.Services.AddSingleton<IEventBusSubscriptionsManager, InMemoryEventBusSubscriptionsManager>();
 
 // add list services for diagnostic purposes - see https://github.com/ardalis/AspNetCoreStartupServices
 builder.Services.Configure<ServiceConfig>(config =>
