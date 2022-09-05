@@ -43,7 +43,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\CatalogService.Core\CatalogService.Core.csproj" />
     <ProjectReference Include="..\..\src\CatalogService.Infrastructure\CatalogService.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\src\CatalogService.Web\CatalogService.Web.csproj" />
   </ItemGroup>
 
 </Project>

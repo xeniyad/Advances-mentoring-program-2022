@@ -1,5 +1,7 @@
-﻿using Ardalis.ListStartupServices;
+﻿using System.Configuration;
+using Ardalis.ListStartupServices;
 using Autofac;
+using Autofac.Core;
 using Autofac.Extensions.DependencyInjection;
 using CatalogService.Core;
 using CatalogService.Core.Interfaces;
@@ -9,11 +11,30 @@ using CatalogService.Infrastructure.ServiceBus;
 using CatalogService.Web;
 using CatalogService.Web.Integration;
 using CatalogService.Web.Setup;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.UI;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Microsoft.Owin.Security.OpenIdConnect;
+using NuGet.Configuration;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddCors(options =>
+{
+ options.AddDefaultPolicy(
+                   policy =>
+                    {
+                      policy.WithOrigins("https://login.microsoftonline.com/", "https://localhost:7105");
+                    });
+});
 
 builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 
@@ -36,14 +57,21 @@ string connectionString = builder.Configuration.GetConnectionString("DefaultConn
 
 builder.Services.AddDbContext(connectionString);
 builder.Services.AddResponseCaching();
-builder.Services.AddControllers(options =>
+builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+        .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAdB2C"));
+
+builder.Services.AddControllersWithViews(options =>
 {
+  var policy = new AuthorizationPolicyBuilder()
+            .RequireAuthenticatedUser()
+            .Build();
+  options.Filters.Add(new AuthorizeFilter(policy)); 
   options.CacheProfiles.Add("Default10",
       new CacheProfile()
       {
         Duration = 10
       });
-}); 
+}).AddMicrosoftIdentityUI(); 
 builder.Services.AddRazorPages();
 builder.Services.ConfigureApi();
 builder.Services.AddTransient<ICatalogIntegrationEventService, CatalogIntegrationEventService>();
@@ -94,12 +122,20 @@ else
   app.UseExceptionHandler("/Home/Error");
   app.UseHsts();
 }
+
+app.UseCors(builder => builder
+     .AllowAnyOrigin()
+     .AllowAnyMethod()
+     .AllowAnyHeader());
+app.UseHttpsRedirection();
 app.UseRouting();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UseCookiePolicy();
 app.UseResponseCaching();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Enable middleware to serve generated Swagger as a JSON endpoint.
 app.UseSwagger();

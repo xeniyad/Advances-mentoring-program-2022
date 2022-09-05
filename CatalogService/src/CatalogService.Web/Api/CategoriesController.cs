@@ -3,6 +3,8 @@ using CatalogService.Core.ProjectAggregate;
 using CatalogService.Web.Models.Categories;
 using CatalogService.Application.Categories.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 
 namespace CatalogService.Web.Api;
 
@@ -23,6 +25,7 @@ public class CategoriesController : BaseApiController
     _resourceFactory = resourceFactory ?? throw new ArgumentNullException(nameof(resourceFactory));
   }
 
+  [AllowAnonymous]
   [HttpOptions(Name = nameof(GetCategoryOptions))]
   public IActionResult GetCategoryOptions()
   {
@@ -31,6 +34,7 @@ public class CategoriesController : BaseApiController
     return Ok();
   }
 
+  [AllowAnonymous]
   [HttpGet(Name = nameof(GetCategoriesList))]
   [ProducesResponseType(StatusCodes.Status200OK)]
   [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -46,6 +50,7 @@ public class CategoriesController : BaseApiController
     return Ok(_resourceFactory.CreateCategoryResourceList(categories));
   }
 
+  [AllowAnonymous]
   [Route("{categoryId}")]
   [HttpGet("{categoryId:int}", Name = nameof(GetCategoryById))]
   [ProducesResponseType(StatusCodes.Status200OK)]
@@ -62,6 +67,8 @@ public class CategoriesController : BaseApiController
     return Ok(_resourceFactory.CreateCategoryResource(category));
   }
 
+  [EnableCors]
+  [Authorize(Roles = "catalog/create")]
   [HttpPost(Name = nameof(CreateCategory))]
   [ProducesResponseType(StatusCodes.Status201Created)]
   [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -81,6 +88,7 @@ public class CategoriesController : BaseApiController
         value: _resourceFactory.CreateCategoryResource(createdCategory));
   }
 
+  [Authorize(Roles = "catalog/update")]
   [HttpPut(Name = nameof(UpdateCategory))]
   [ProducesResponseType(StatusCodes.Status204NoContent)]
   [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -102,6 +110,7 @@ public class CategoriesController : BaseApiController
     return Ok();
   }
 
+  [Authorize(Roles = "catalog/delete")]
   [HttpDelete("{categoryId:int}", Name = nameof(DeleteCategory))]
   [ProducesResponseType(StatusCodes.Status204NoContent)]
   [ProducesResponseType(StatusCodes.Status404NotFound)]

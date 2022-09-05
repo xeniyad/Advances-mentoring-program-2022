@@ -5,6 +5,7 @@ using CatalogService.Web.Models.Items;
 using CatalogService.Application.Items.Models;
 using CatalogService.Web.Integration;
 using CatalogService.Application.IntegrationEvents;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CatalogService.Web.Api;
 
@@ -36,9 +37,8 @@ public class ItemsController : BaseApiController
   [HttpGet(Name = nameof(GetItemsList))]
   [ProducesResponseType(StatusCodes.Status200OK)]
   [ProducesResponseType(StatusCodes.Status400BadRequest)]
+  [ProducesResponseType(StatusCodes.Status401Unauthorized)]
   [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-  [ProducesResponseType(StatusCodes.Status415UnsupportedMediaType)]
-  [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
   [ProducesResponseType(StatusCodes.Status500InternalServerError)]
   [ResponseCache(CacheProfileName = "Default10")]
   public async Task<IActionResult> GetItemsList([FromRoute] int categoryId, [FromQuery] ItemQuery itemQuery)
@@ -54,8 +54,8 @@ public class ItemsController : BaseApiController
   [Route("{itemId:int}")]
   [ProducesResponseType(StatusCodes.Status200OK)]
   [ProducesResponseType(StatusCodes.Status404NotFound)]
+  [ProducesResponseType(StatusCodes.Status401Unauthorized)]
   [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-  [ProducesResponseType(StatusCodes.Status415UnsupportedMediaType)]
   [ProducesResponseType(StatusCodes.Status500InternalServerError)]
   public async Task<IActionResult> GetItemById([FromRoute] int categoryId, [FromRoute] int itemId)
   {
@@ -66,12 +66,12 @@ public class ItemsController : BaseApiController
     return Ok(_resourceFactory.CreateItemResource(item, categoryId));
   }
 
+  [Authorize(Roles = "catalog/create")]
   [HttpPost(Name = nameof(CreateItem))]
   [ProducesResponseType(StatusCodes.Status201Created)]
   [ProducesResponseType(StatusCodes.Status400BadRequest)]
+  [ProducesResponseType(StatusCodes.Status401Unauthorized)]
   [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-  [ProducesResponseType(StatusCodes.Status415UnsupportedMediaType)]
-  [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
   [ProducesResponseType(StatusCodes.Status500InternalServerError)]
   public async Task<IActionResult> CreateItem([FromRoute] int categoryId, [FromBody] ItemForCreate item)
   {
@@ -91,16 +91,17 @@ public class ItemsController : BaseApiController
         value: _resourceFactory.CreateItemResource(createdItem, categoryId));
   }
 
+  [Authorize(Roles = "catalog/update")]
   [HttpPut(Name = nameof(UpdateItem))]
-  [ProducesResponseType(StatusCodes.Status204NoContent)]
+  [ProducesResponseType(StatusCodes.Status200OK)]
   [ProducesResponseType(StatusCodes.Status400BadRequest)]
+  [ProducesResponseType(StatusCodes.Status401Unauthorized)]
   [ProducesResponseType(StatusCodes.Status404NotFound)]
-  [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-  [ProducesResponseType(StatusCodes.Status415UnsupportedMediaType)]
-  [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
   [ProducesResponseType(StatusCodes.Status500InternalServerError)]
   public async Task<IActionResult> UpdateItem([FromRoute] int categoryId, [FromBody] ItemForUpdate item)
   {
+    if (!User.IsInRole("catalog/update")) return Unauthorized();
+    var oldItem = await _itemService.GetItem(item.Id);
     var dbItem = new Item()
     {
       Id = item.Id,
@@ -113,16 +114,21 @@ public class ItemsController : BaseApiController
 
     await _itemService.UpdateItem(dbItem, categoryId);
 
-    var itemChangedEvent = new ItemChangedIntegrationEvent(item.Id, item.Price, item.Name);
+    if (oldItem != null && item != null && (oldItem.Price != item.Price || oldItem.Name != item.Name))
+    {
+      var itemChangedEvent = new ItemChangedIntegrationEvent(item.Id, item.Price, item.Name);   
 
-    // Publish through the Event Bus and mark the saved event as published
-    await _intergrationService.PublishThroughEventBusAsync(itemChangedEvent);
+      // Publish through the Event Bus and mark the saved event as published
+      await _intergrationService.PublishThroughEventBusAsync(itemChangedEvent);
+    }
 
     return Ok();
   }
 
+  [Authorize(Roles = "catalog/delete")]
   [HttpDelete("{itemId:int}", Name = nameof(DeleteItem))]
   [ProducesResponseType(StatusCodes.Status404NotFound)]
+  [ProducesResponseType(StatusCodes.Status401Unauthorized)]
   [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
   [ProducesResponseType(StatusCodes.Status500InternalServerError)]
   public async Task<IActionResult> DeleteItem(int itemId)
