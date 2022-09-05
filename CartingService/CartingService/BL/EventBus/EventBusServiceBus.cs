@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using Azure.Messaging.ServiceBus;
 using Azure.Messaging.ServiceBus.Administration;
+using Carting.BL.IntegrationEvents;
 using System;
 using System.Text;
 using System.Text.Json;
@@ -13,11 +14,11 @@ public class EventBusServiceBus : IEventBus, IDisposable
     private readonly IServiceBusPersisterConnection _serviceBusPersisterConnection;
     private readonly IEventBusSubscriptionsManager _subsManager;
     private readonly ILifetimeScope _autofac;
-    private readonly string _topicName = "eshop_event_bus";
+    private readonly string _topicName = "products";
     private readonly string _subscriptionName;
     private ServiceBusSender _sender;
     private ServiceBusProcessor _processor;
-    private readonly string AUTOFAC_SCOPE_NAME = "eshop_event_bus";
+    private readonly string AUTOFAC_SCOPE_NAME = "catalogservice_event_bus";
     private const string INTEGRATION_EVENT_SUFFIX = "IntegrationEvent";
 
     public EventBusServiceBus(IServiceBusPersisterConnection serviceBusPersisterConnection,

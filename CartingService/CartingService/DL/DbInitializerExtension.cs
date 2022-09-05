@@ -18,7 +18,7 @@ namespace Carting.DL
             var services = scope.ServiceProvider;
             try
             {
-                var context = services.GetRequiredService<ICartingRepository>();
+                var context = services.GetRequiredService<CartingContext>();
                 DbInitializer.Initialize(context);
             }
             catch (Exception ex)

@@ -22,8 +22,16 @@ namespace Carting.DL
         public void Configure(EntityTypeBuilder<Item> builder)
         {
             // This Converter will perform the conversion to and from Json to the desired type
-            builder.Property(e => e.Image).HasJsonConversion<Image>();
-            builder.Property(e => e.Price).HasJsonConversion<Money>();
+            builder.Property(e => e.Image)
+                    .HasConversion(
+                         i => i.ToDbString(),
+                         i => new Image(i)
+                     );
+            builder.Property(i => i.Price)
+                    .HasConversion(
+                         i => i.ToDbString(),
+                         i => new Money(i)
+                     );
         }
     }
 }

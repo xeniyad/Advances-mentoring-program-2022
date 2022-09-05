@@ -14,6 +14,8 @@
     <PackageReference Include="Ardalis.Specification" Version="6.1.0" />
     <PackageReference Include="Autofac" Version="6.4.0" />
     <PackageReference Include="MediatR" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Owin.Security.Cookies" />
+    <PackageReference Include="Microsoft.Owin.Security.OpenIdConnect" />
   </ItemGroup>
 
   <ItemGroup>
