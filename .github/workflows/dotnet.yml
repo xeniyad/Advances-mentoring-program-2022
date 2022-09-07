@@ -32,9 +32,9 @@ jobs:
       working-directory: CatalogService
       
     - name: Tests carting
-      run: dotnet test
+      run: dotnet test /help
       working-directory: CartingService
         
     - name: Tests catalog
-      run: dotnet test
+      run: dotnet test /help
       working-directory: CatalogService
