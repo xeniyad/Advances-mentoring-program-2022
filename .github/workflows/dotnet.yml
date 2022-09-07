@@ -23,9 +23,6 @@ jobs:
     - name: Build carting
       run: dotnet build --configuration Release CartingService.sln
       working-directory: CartingService
-    - name: Test carting
-      run: dotnet test --no-build --verbosity normal      
-      working-directory: CartingService
       
     - name: Restore dependencies catalog
       run: dotnet restore
@@ -33,6 +30,6 @@ jobs:
     - name: Build catalog
       run: dotnet build --configuration Release CatalogService.sln
       working-directory: CatalogService/src
-    - name: Test catalog
+        
+    - name: Tests
       run: dotnet test --no-build --verbosity normal
-      working-directory: CatalogService/test/CatalogService.UnitTests
