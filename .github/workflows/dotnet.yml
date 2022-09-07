@@ -19,17 +19,20 @@ jobs:
         dotnet-version: 6.0.x
     - name: Restore dependencies
       run: dotnet restore
-      working-directory: CartingService/CartingService
+      working-directory: CartingService
     - name: Build carting
-      run: dotnet build --configuration Release Carting.csproj
-      working-directory: CartingService/CartingService
-    - name: Build carting api
-      run: dotnet build --configuration Release CartingService.API/Carting.API.csproj
-      working-directory: CartingService/CartingService
+      run: dotnet build --configuration Release CartingService.sln
+      working-directory: CartingService
     - name: Test carting
       run: dotnet test --no-build --verbosity normal      
-      working-directory: CatalogService/CartingService
-    - name: Build
+      working-directory: CatalogService/CartingServiceTest
+      
+    - name: Restore dependencies
+      run: dotnet restore
+      working-directory: CatalogService/src
+    - name: Build carting
       run: dotnet build --configuration Release CatalogService.sln
+      working-directory: CatalogService/src
     - name: Test
       run: dotnet test --no-build --verbosity normal
+      working-directory: CatalogService/test/CatalogService.UnitTests
