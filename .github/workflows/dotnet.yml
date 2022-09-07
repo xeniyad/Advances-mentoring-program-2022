@@ -19,6 +19,13 @@ jobs:
         dotnet-version: 6.0.x
     - name: Restore dependencies
       run: dotnet restore
+      working-directory: CartingService
+    - name: Build
+      run: dotnet build --no-restore
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
+      
+      working-directory: CatalogService
     - name: Build
       run: dotnet build --no-restore
     - name: Test
