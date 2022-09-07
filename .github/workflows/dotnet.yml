@@ -32,5 +32,5 @@ jobs:
       working-directory: CatalogService
         
     - name: Tests
-      run: dotnet test --no-build --verbosity normal /help
+      run: dotnet test
       working-directory: CatalogService
