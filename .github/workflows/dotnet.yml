@@ -26,10 +26,10 @@ jobs:
       
     - name: Restore dependencies catalog
       run: dotnet restore
-      working-directory: CatalogService/src
+      working-directory: CatalogService
     - name: Build catalog
       run: dotnet build --configuration Release CatalogService.sln
-      working-directory: CatalogService/src
+      working-directory: CatalogService
         
     - name: Tests
       run: dotnet test --no-build --verbosity normal
