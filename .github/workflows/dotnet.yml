@@ -22,11 +22,12 @@ jobs:
       working-directory: CartingService/CartingService
     - name: Build carting
       run: dotnet build --configuration Release Carting.csproj
+      working-directory: CartingService/CartingService
     - name: Build carting api
       run: dotnet build --configuration Release CartingService.API/Carting.API.csproj
+      working-directory: CartingService/CartingService
     - name: Test carting
-      run: dotnet test --no-build --verbosity normal
-      
+      run: dotnet test --no-build --verbosity normal      
       working-directory: CatalogService/CartingService
     - name: Build
       run: dotnet build --configuration Release CatalogService.sln
