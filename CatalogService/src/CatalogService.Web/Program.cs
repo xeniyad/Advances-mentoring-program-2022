@@ -123,12 +123,14 @@ else
   app.UseHsts();
 }
 
+app.UseHttpsRedirection();
+app.UseRouting();
+
+
 app.UseCors(builder => builder
      .AllowAnyOrigin()
      .AllowAnyMethod()
      .AllowAnyHeader());
-app.UseHttpsRedirection();
-app.UseRouting();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
