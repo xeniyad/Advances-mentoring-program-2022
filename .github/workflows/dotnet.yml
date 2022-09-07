@@ -20,12 +20,14 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
       working-directory: CartingService
-    - name: Build
-      run: dotnet build --configuration Release CartingService.sln
-    - name: Test
+    - name: Build carting
+      run: dotnet build --configuration Release CartingService/Carting.csproj
+    - name: Build carting api
+      run: dotnet build --configuration Release CartingService.API/Carting.API.csproj
+    - name: Test carting
       run: dotnet test --no-build --verbosity normal
       
-      working-directory: CatalogService
+      working-directory: CatalogService/CartingService
     - name: Build
       run: dotnet build --configuration Release CatalogService.sln
     - name: Test
