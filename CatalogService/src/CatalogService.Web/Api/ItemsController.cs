@@ -1,5 +1,6 @@
 ﻿using CatalogService.Core.Interfaces;
 using CatalogService.Core.ProjectAggregate;
+using CatalogService.Core.ValueObjects;
 using Microsoft.AspNetCore.Mvc;
 using CatalogService.Web.Models.Items;
 using CatalogService.Application.Items.Models;
