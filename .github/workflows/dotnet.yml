@@ -19,9 +19,9 @@ jobs:
         dotnet-version: 6.0.x
     - name: Restore dependencies
       run: dotnet restore
-      working-directory: CartingService
+      working-directory: CartingService/CartingService
     - name: Build carting
-      run: dotnet build --configuration Release CartingService/Carting.csproj
+      run: dotnet build --configuration Release Carting.csproj
     - name: Build carting api
       run: dotnet build --configuration Release CartingService.API/Carting.API.csproj
     - name: Test carting
