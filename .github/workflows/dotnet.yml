@@ -17,7 +17,7 @@ jobs:
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: 6.0.x
-    - name: Restore dependencies
+    - name: Restore dependencies carting
       run: dotnet restore
       working-directory: CartingService
     - name: Build carting
@@ -25,14 +25,14 @@ jobs:
       working-directory: CartingService
     - name: Test carting
       run: dotnet test --no-build --verbosity normal      
-      working-directory: CatalogService/CartingServiceTest
+      working-directory: CartingService/CartingServiceTest
       
-    - name: Restore dependencies
+    - name: Restore dependencies catalog
       run: dotnet restore
       working-directory: CatalogService/src
-    - name: Build carting
+    - name: Build catalog
       run: dotnet build --configuration Release CatalogService.sln
       working-directory: CatalogService/src
-    - name: Test
+    - name: Test catalog
       run: dotnet test --no-build --verbosity normal
       working-directory: CatalogService/test/CatalogService.UnitTests
