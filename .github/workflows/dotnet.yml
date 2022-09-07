@@ -30,7 +30,11 @@ jobs:
     - name: Build catalog
       run: dotnet build --configuration Release CatalogService.sln
       working-directory: CatalogService
+      
+    - name: Tests carting
+      run: dotnet test
+      working-directory: CartingService
         
-    - name: Tests
+    - name: Tests catalog
       run: dotnet test
       working-directory: CatalogService
