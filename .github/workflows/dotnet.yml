@@ -25,7 +25,7 @@ jobs:
       working-directory: CartingService
     - name: Test carting
       run: dotnet test --no-build --verbosity normal      
-      working-directory: CartingService/CartingServiceTest
+      working-directory: CartingService\CartingServiceTests
       
     - name: Restore dependencies catalog
       run: dotnet restore
