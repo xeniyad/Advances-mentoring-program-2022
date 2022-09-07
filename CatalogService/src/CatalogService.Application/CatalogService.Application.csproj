@@ -11,9 +11,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\CatalogService.Core\CatalogService.Core.csproj" />
-    <ProjectReference Include="..\src\CatalogService.Infrastructure\CatalogService.Infrastructure.csproj" />
-    <ProjectReference Include="..\src\CatalogService.SharedKernel\CatalogService.SharedKernel.csproj" />
+    <ProjectReference Include="..\CatalogService.Core\CatalogService.Core.csproj" />
+    <ProjectReference Include="..\CatalogService.Infrastructure\CatalogService.Infrastructure.csproj" />
+    <ProjectReference Include="..\CatalogService.SharedKernel\CatalogService.SharedKernel.csproj" />
   </ItemGroup>
 
 </Project>

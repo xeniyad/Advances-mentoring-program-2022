@@ -81,7 +81,7 @@ public class ItemsController : BaseApiController
       Description = item.Description,
       Image = item.Image?.ToString(),
       Amount = item.Amount,
-      Price = item.Price 
+      Price = item.Price
     };
 
     var createdItem = await _itemService.AddItem(newItem, categoryId);
