@@ -1,17 +1,8 @@
-using System.Web.Http;
-
 namespace Carting.Tests
 {
     [TestClass]
     public class CartingServiceTest
     {
-        public CartingServiceTest()
-        {
-            var configuration = new HttpConfiguration();
-            var request = new HttpRequestMessage();
-            request.SetConfiguration(configuration);
-        }
-
         private async Task<Guid> initializeExistingCart(CartingContext context)
         {
             var existingCartId = Guid.NewGuid();

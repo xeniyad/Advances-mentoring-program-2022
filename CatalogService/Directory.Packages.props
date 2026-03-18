@@ -1,67 +1,59 @@
 <Project>
   <PropertyGroup>
-    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
+    <!-- Ardalis -->
     <PackageVersion Include="Ardalis.ApiEndpoints" Version="4.0.1" />
-    <PackageVersion Include="Ardalis.GuardClauses" Version="4.0.1" />
-    <PackageVersion Include="Ardalis.HttpClientTestExtensions" Version="1.0.0" />
-    <PackageVersion Include="Ardalis.ListStartupServices" Version="1.1.3" />
-    <PackageVersion Include="Ardalis.Result" Version="4.1.0" />
-    <PackageVersion Include="Ardalis.Result.AspNetCore" Version="4.1.0" />
-    <PackageVersion Include="Ardalis.SmartEnum" Version="2.1.0" />
-    <PackageVersion Include="Ardalis.Specification" Version="6.0.1" />
-    <PackageVersion Include="Ardalis.Specification.EntityFrameworkCore" Version="6.0.1" />
-    <PackageVersion Include="Autofac" Version="6.3.0" />
-    <PackageVersion Include="Autofac.Extensions.DependencyInjection" Version="7.2.0" />
-    <PackageVersion Include="coverlet.collector" Version="3.1.2" />
-    <PackageVersion Include="MediatR" Version="10.0.1" />
-    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer">
-      <Version>6.0.8</Version>
-    </PackageVersion>
-    <PackageVersion Include="Microsoft.AspNetCore.Cors">
-      <Version>2.2.0</Version>
-    </PackageVersion>
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.8" />
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="6.0.5" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="6.0.5" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.8" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.5" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.5" />
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
-    <PackageVersion Include="Microsoft.Identity.Web">
-      <Version>1.25.2</Version>
-    </PackageVersion>
-    <PackageVersion Include="Microsoft.Identity.Web.UI">
-      <Version>1.25.2</Version>
-    </PackageVersion>
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
-    <PackageVersion Include="Microsoft.Owin.Host.SystemWeb">
-      <Version>4.2.2</Version>
-    </PackageVersion>
-    <PackageVersion Include="Microsoft.Owin.Security.Cookies">
-      <Version>4.2.2</Version>
-    </PackageVersion>
-    <PackageVersion Include="Microsoft.Owin.Security.OpenIdConnect">
-      <Version>4.2.2</Version>
-    </PackageVersion>
-    <PackageVersion Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.8" />
-    <PackageVersion Include="Moq" Version="4.18.1" />
-    <PackageVersion Include="NETStandard.Library" Version="2.0.3" />
+    <PackageVersion Include="Ardalis.GuardClauses" Version="5.0.0" />
+    <PackageVersion Include="Ardalis.ListStartupServices" Version="1.1.4" />
+    <PackageVersion Include="Ardalis.Result" Version="10.1.0" />
+    <PackageVersion Include="Ardalis.Result.AspNetCore" Version="10.1.0" />
+    <PackageVersion Include="Ardalis.SmartEnum" Version="8.2.0" />
+    <PackageVersion Include="Ardalis.Specification" Version="9.3.1" />
+    <PackageVersion Include="Ardalis.Specification.EntityFrameworkCore" Version="9.3.1" />
+    <!-- Autofac -->
+    <PackageVersion Include="Autofac" Version="9.1.0" />
+    <PackageVersion Include="Autofac.Extensions.DependencyInjection" Version="8.0.0" />
+    <!-- Azure -->
+    <PackageVersion Include="Azure.Messaging.ServiceBus" Version="7.10.0" />
+    <!-- Entity Framework Core -->
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="6.0.7" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.7" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.7" />
+    <!-- ASP.NET Core -->
+    <PackageVersion Include="Microsoft.AspNetCore.Cors" Version="2.2.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.6" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="6.0.7" />
+    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="6.0.7" />
+    <!-- Identity -->
+    <PackageVersion Include="Microsoft.Identity.Web" Version="1.25.2" />
+    <PackageVersion Include="Microsoft.Identity.Web.UI" Version="1.25.2" />
+    <!-- OpenAPI / Swagger -->
+    <PackageVersion Include="Microsoft.OpenApi" Version="1.3.2" />
+    <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.3.1" />
+    <PackageVersion Include="Swashbuckle.AspNetCore.Annotations" Version="6.3.1" />
+    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.3.1" />
+    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.3.1" />
+    <!-- Newtonsoft -->
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.1" />
+    <!-- Hosting -->
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.0" />
+    <!-- MediatR -->
+    <PackageVersion Include="MediatR" Version="14.1.0" />
+    <!-- Serilog -->
+    <PackageVersion Include="Serilog.AspNetCore" Version="5.0.0" />
+    <PackageVersion Include="Serilog.Sinks.ApplicationInsights" Version="4.0.0" />
+    <!-- Testing -->
+    <PackageVersion Include="coverlet.collector" Version="3.1.2" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
+    <PackageVersion Include="Moq" Version="4.18.1" />
     <PackageVersion Include="ReportGenerator" Version="5.1.9" />
-    <PackageVersion Include="Serilog.AspNetCore" Version="6.0.1" />
-    <PackageVersion Include="Serilog.Sinks.ApplicationInsights" Version="3.1.0" />
-    <PackageVersion Include="SQLite" Version="3.13.0" />
-    <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.4.0" />
-    <PackageVersion Include="Swashbuckle.AspNetCore.Annotations" Version="6.4.0" />
-    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerGen">
-      <Version>6.4.0</Version>
-    </PackageVersion>
-    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerUI">
-      <Version>6.4.0</Version>
-    </PackageVersion>
-    <PackageVersion Include="xunit" Version="2.4.1" />
+    <PackageVersion Include="xunit.assert" Version="2.4.1" />
+    <PackageVersion Include="xunit.core" Version="2.4.1" />
+    <PackageVersion Include="xunit.extensibility.core" Version="2.4.1" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.5" />
+    <!-- Tools -->
+    <PackageVersion Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.6" />
   </ItemGroup>
 </Project>
