@@ -98,7 +98,7 @@ namespace Carting.DL
             var cart = await GetCartAsync(id);
             if (cart == null)
                 return false;
-            var item = cart.Items.First(i => i.Id == itemId);
+            var item = cart.Items.FirstOrDefault(i => i.Id == itemId);
 
             if (item != null)
                 _cartingContext.Items.Remove(item);

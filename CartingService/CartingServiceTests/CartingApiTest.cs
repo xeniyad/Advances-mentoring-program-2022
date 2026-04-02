@@ -19,6 +19,7 @@ namespace Carting.Tests
             _factory = new WebApplicationFactory<Carting.API.Program>()
                                   .WithWebHostBuilder(builder =>
                                   {
+                                      builder.UseSetting("EventBusConnection", "");
                                       builder.ConfigureServices(services =>
                                       {
                                           services.AddSingleton(_cartingRepoMock.Object);
@@ -32,12 +33,11 @@ namespace Carting.Tests
         public async Task GetCart_HappyPath()
         {
             var client = _factory.CreateClient();
-            var cartId = new Guid();
+            var cartId = Guid.NewGuid();
             var item = new Item { Name = "Butter", Id = 2, Price = new Money(20.51, Currency.USD), Quantity = 4, Image = null };
             var cart = new Cart() { Id = cartId, Items = new List<Item> { item } };
 
-            _cartingRepoMock.Setup(repo => repo.AddItemToCartAsync(cartId, item)).
-              ReturnsAsync(item);
+            _cartingRepoMock.Setup(repo => repo.GetCartAsync(cartId)).ReturnsAsync(cart);
 
             var response = await client.GetAsync($"cart/{cartId}");
             response.EnsureSuccessStatusCode();

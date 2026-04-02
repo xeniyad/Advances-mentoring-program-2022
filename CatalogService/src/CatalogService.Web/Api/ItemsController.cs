@@ -27,6 +27,7 @@ public class ItemsController : BaseApiController
     _intergrationService = catalogIntegrationEventService ?? throw new ArgumentNullException(nameof(catalogIntegrationEventService)); 
   }
 
+  [AllowAnonymous]
   [HttpOptions(Name = nameof(GetItemOptions))]
   public IActionResult GetItemOptions()
   {
@@ -35,6 +36,7 @@ public class ItemsController : BaseApiController
     return Ok();
   }
 
+  [AllowAnonymous]
   [HttpGet(Name = nameof(GetItemsList))]
   [ProducesResponseType(StatusCodes.Status200OK)]
   [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -51,6 +53,7 @@ public class ItemsController : BaseApiController
     return Ok(_resourceFactory.CreateItemResourceList(pagedItems, itemQuery, categoryId));
   }
 
+  [AllowAnonymous]
   [HttpGet("{itemId:int}", Name = nameof(GetItemById))]
   [Route("{itemId:int}")]
   [ProducesResponseType(StatusCodes.Status200OK)]
@@ -101,7 +104,6 @@ public class ItemsController : BaseApiController
   [ProducesResponseType(StatusCodes.Status500InternalServerError)]
   public async Task<IActionResult> UpdateItem([FromRoute] int categoryId, [FromBody] ItemForUpdate item)
   {
-    if (!User.IsInRole("catalog/update")) return Unauthorized();
     var oldItem = await _itemService.GetItem(item.Id);
     var dbItem = new Item()
     {

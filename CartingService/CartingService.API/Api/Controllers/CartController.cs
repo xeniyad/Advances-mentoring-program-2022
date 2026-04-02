@@ -2,6 +2,7 @@
 using Carting.BL;
 using Carting.BL.DTO;
 using Carting.DL;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -12,9 +13,9 @@ namespace Carting.API.Api.Controllers
     public class Cart1Controller : ControllerBase
     {
         private readonly CartingService _service;
-        public Cart1Controller(ICartingRepository repository)
+        public Cart1Controller(CartingService service)
         {
-            _service = new CartingService(repository);
+            _service = service;
         }
 
         [HttpGet]
@@ -41,6 +42,7 @@ namespace Carting.API.Api.Controllers
             return Ok(response);
         }
 
+        [Authorize]
         [HttpPost]
         [Route("cart/{cartId}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ItemDTO))]
@@ -48,17 +50,17 @@ namespace Carting.API.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
         public async Task<IActionResult> InsertItem(string cartId, [FromBody] ItemDTO item)
         {
-            var itemDb = new Item() { 
-                Id = item.Id, 
-                Image = item.Image, 
-                Name = item.Name, 
-                Price = item.Price, 
-                Quantity = item.Quantity 
+            var itemDb = new Item() {
+                Id = item.Id,
+                Image = item.Image,
+                Name = item.Name,
+                Price = item.Price,
+                Quantity = item.Quantity
             };
             var createdItem = await _service.AddItemAsync(new Guid(cartId), itemDb);
             if (createdItem.Id != default)
             {
-                var response = new ItemDTO() { 
+                var response = new ItemDTO() {
                     Id = createdItem.Id,
                     Name = createdItem.Name,
                     Image = createdItem.Image,
@@ -69,6 +71,7 @@ namespace Carting.API.Api.Controllers
             } else return BadRequest();
         }
 
+        [Authorize]
         [Route("cart/{cartId}/items/{itemId:int}")]
         [HttpDelete]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -89,11 +92,10 @@ namespace Carting.API.Api.Controllers
     [ApiVersion("2.0")]
     public class Cart2Controller : ControllerBase
     {
-
         private readonly CartingService _service;
-        public Cart2Controller(ICartingRepository repository)
+        public Cart2Controller(CartingService service)
         {
-            _service = new CartingService(repository);
+            _service = service;
         }
 
         [HttpGet]
@@ -116,6 +118,7 @@ namespace Carting.API.Api.Controllers
             return Ok(response);
         }
 
+        [Authorize]
         [HttpPost]
         [Route("cart/{cartId}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Item))]
@@ -139,6 +142,7 @@ namespace Carting.API.Api.Controllers
             else return BadRequest();
         }
 
+        [Authorize]
         [HttpDelete("cart/{cartId}/items/{itemId:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
