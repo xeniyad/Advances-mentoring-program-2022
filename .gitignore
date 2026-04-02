@@ -1,4 +1,14 @@
+# Build output
 bin
 obj
 TestResults
+ 
+# Visual Studio
 .vs
+*.csproj.user
+*.user
+appsettings.*.json
+**/wwwroot/lib/
+node_modules/
+dist/
+log*.txt

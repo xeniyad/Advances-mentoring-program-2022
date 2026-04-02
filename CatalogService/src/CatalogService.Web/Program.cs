@@ -1,26 +1,30 @@
 ﻿using System.Configuration;
 using Ardalis.ListStartupServices;
-using Autofac;
-using Autofac.Core;
-using Autofac.Extensions.DependencyInjection;
 using CatalogService.Core;
 using CatalogService.Core.Interfaces;
 using CatalogService.Infrastructure;
 using CatalogService.Infrastructure.Data;
 using CatalogService.Infrastructure.ServiceBus;
+using CatalogService.Infrastructure.Services;
+using CatalogService.SharedKernel;
+using CatalogService.SharedKernel.Interfaces;
 using CatalogService.Web;
 using CatalogService.Web.Integration;
 using CatalogService.Web.Setup;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.Identity.Web;
-using Microsoft.Identity.Web.UI;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Allow HTTP/1.1 connections (needed when gateway proxies over plain HTTP)
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ConfigureEndpointDefaults(o =>
+        o.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2);
+});
+
+builder.AddServiceDefaults();
 
 builder.Services.AddCors(options =>
 {
@@ -30,8 +34,6 @@ builder.Services.AddCors(options =>
                       policy.WithOrigins("https://login.microsoftonline.com/", "https://localhost:7105");
                     });
 });
-
-builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 
 builder.Host.UseSerilog((_, config) => config.ReadFrom.Configuration(builder.Configuration));
 
@@ -54,24 +56,52 @@ string connectionString = builder.Configuration.GetConnectionString("DefaultConn
 
 builder.Services.AddDbContext(connectionString);
 builder.Services.AddResponseCaching();
-builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-        .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAdB2C"));
+var azureAd = builder.Configuration.GetSection("AzureAdB2C");
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer(options =>
+        {
+          if (builder.Environment.IsDevelopment())
+          {
+            // In dev, bypass all JWT validation and parse mock tokens directly.
+            // SignatureValidator / TokenValidationParameters are unreliable with
+            // alg:none tokens on .NET 9's JsonWebTokenHandler pipeline.
+            options.Events = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents
+            {
+              OnMessageReceived = context =>
+              {
+                var authHeader = context.Request.Headers.Authorization.ToString();
+                if (authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                {
+                  var raw = authHeader["Bearer ".Length..];
+                  var jwt = new Microsoft.IdentityModel.JsonWebTokens.JsonWebToken(raw);
+                  var claims = jwt.Claims.ToList();
+                  var identity = new System.Security.Claims.ClaimsIdentity(claims, "Bearer", "name", "roles");
+                  context.Principal = new System.Security.Claims.ClaimsPrincipal(identity);
+                  context.Success();
+                }
+                return Task.CompletedTask;
+              }
+            };
+          }
+          else
+          {
+            options.Authority = $"{azureAd["Instance"]}{azureAd["TenantId"]}/v2.0";
+            options.Audience = azureAd["ClientId"];
+            options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+            {
+              RoleClaimType = "roles",
+            };
+          }
+        });
 
 builder.Services.AddControllersWithViews(options =>
 {
-  if (!builder.Environment.IsDevelopment())
-  {
-    var policy = new AuthorizationPolicyBuilder()
-              .RequireAuthenticatedUser()
-              .Build();
-    options.Filters.Add(new AuthorizeFilter(policy));
-  }
   options.CacheProfiles.Add("Default10",
       new CacheProfile()
       {
         Duration = 10
       });
-}).AddMicrosoftIdentityUI();
+});
 builder.Services.AddRazorPages();
 builder.Services.ConfigureApi();
 builder.Services.AddTransient<ICatalogIntegrationEventService, CatalogIntegrationEventService>();
@@ -82,15 +112,19 @@ if (serviceBusEnabled)
   builder.Services.AddSingleton<EventBusServiceBus>(sp =>
   {
     var serviceBusPersisterConnection = sp.GetRequiredService<IServiceBusPersisterConnection>();
-    var iLifetimeScope = sp.GetRequiredService<ILifetimeScope>();
+    var scopeFactory = sp.GetRequiredService<IServiceScopeFactory>();
     var eventBusSubcriptionsManager = sp.GetRequiredService<IEventBusSubscriptionsManager>();
-    string subscriptionName = builder.Configuration["SubscriptionClientName"];
+    string subscriptionName = builder.Configuration["SubscriptionClientName"] ?? "catalogservice";
 
     return new EventBusServiceBus(serviceBusPersisterConnection,
-        eventBusSubcriptionsManager, iLifetimeScope, subscriptionName);
+        eventBusSubcriptionsManager, scopeFactory, subscriptionName);
   });
   builder.Services.AddSingleton<IEventBus>(sp => sp.GetRequiredService<EventBusServiceBus>());
   builder.Services.AddHostedService(sp => sp.GetRequiredService<EventBusServiceBus>());
+}
+else
+{
+  builder.Services.AddSingleton<IEventBus, InMemoryEventBus>();
 }
 
 // add list services for diagnostic purposes - see https://github.com/ardalis/AspNetCoreStartupServices
@@ -103,10 +137,11 @@ builder.Services.Configure<ServiceConfig>(config =>
 });
 
 
-builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder =>
-{
-  containerBuilder.RegisterModule(new DefaultInfrastructureModule(builder.Environment.EnvironmentName == "Development"));
-});
+// Services previously registered via Autofac DefaultInfrastructureModule
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<CatalogService.Core.ProjectAggregate.Category>());
+builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IItemService, ItemService>();
 
 //builder.Logging.AddAzureWebAppDiagnostics(); add this if deploying to Azure
 builder.Services.ConfigureSwagger();
@@ -127,7 +162,10 @@ app.UseCors(builder => builder
      .AllowAnyOrigin()
      .AllowAnyMethod()
      .AllowAnyHeader());
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+  app.UseHttpsRedirection();
+}
 app.UseRouting();
 app.UseStaticFiles();
 app.UseResponseCaching();
@@ -137,8 +175,10 @@ app.UseAuthorization();
 
 app.UseCustomSwagger();
 
+app.MapControllers();
 app.MapDefaultControllerRoute();
 app.MapRazorPages();
+app.MapDefaultEndpoints();
 
 // Seed Database
 using (var scope = app.Services.CreateScope())

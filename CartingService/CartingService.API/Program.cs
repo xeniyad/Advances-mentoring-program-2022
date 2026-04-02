@@ -8,32 +8,45 @@ using Carting.BL.EventBus;
 using Carting.BL.IntegrationEvents.EventHandling;
 using Carting.BL.IntegrationEvents.Events;
 using Carting.DL;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.Identity.Web;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.AddServiceDefaults();
 builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 builder.Services.AddDbContext<CartingContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("CartingDb")));
-builder.Services.AddSingleton<IServiceBusPersisterConnection>(sp =>
+
+var serviceBusConnectionString = builder.Configuration["EventBusConnection"];
+var serviceBusEnabled = !string.IsNullOrWhiteSpace(serviceBusConnectionString);
+
+if (serviceBusEnabled)
 {
-    var serviceBusConnectionString = builder.Configuration["EventBusConnection"];
-    return new DefaultServiceBusPersisterConnection(serviceBusConnectionString);
-});
+    builder.Services.AddSingleton<IServiceBusPersisterConnection>(sp =>
+        new DefaultServiceBusPersisterConnection(serviceBusConnectionString));
+}
 
 Configure.ConfigureServices(builder.Services);
-builder.Services.AddSingleton<IEventBus, EventBusServiceBus>(sp =>
-{
-    var serviceBusPersisterConnection = sp.GetRequiredService<IServiceBusPersisterConnection>();
-    var iLifetimeScope = sp.GetRequiredService<ILifetimeScope>();
-    var logger = sp.GetRequiredService<ILogger<EventBusServiceBus>>();
-    var eventBusSubcriptionsManager = sp.GetRequiredService<IEventBusSubscriptionsManager>();
-    string? subscriptionName = builder.Configuration["SubscriptionClientName"];
 
-    return new EventBusServiceBus(serviceBusPersisterConnection,
-        eventBusSubcriptionsManager, iLifetimeScope, subscriptionName);
-});
+if (serviceBusEnabled)
+{
+    builder.Services.AddSingleton<IEventBus, EventBusServiceBus>(sp =>
+    {
+        var serviceBusPersisterConnection = sp.GetRequiredService<IServiceBusPersisterConnection>();
+        var iLifetimeScope = sp.GetRequiredService<ILifetimeScope>();
+        var eventBusSubcriptionsManager = sp.GetRequiredService<IEventBusSubscriptionsManager>();
+        string? subscriptionName = builder.Configuration["SubscriptionClientName"];
+
+        return new EventBusServiceBus(serviceBusPersisterConnection,
+            eventBusSubcriptionsManager, iLifetimeScope, subscriptionName);
+    });
+}
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAdB2C"));
 
 builder.Services.AddControllers();
 
@@ -54,11 +67,14 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-app.UseExceptionHandler("/Error");
-app.UseHsts();
 app.UseItToSeedSqlServer();
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Error");
+    app.UseHsts();
+    app.UseHttpsRedirection();
+}
 app.UseStaticFiles();
 
 app.UseSwagger();
@@ -75,12 +91,17 @@ app.UseSwaggerUI(options =>
     }
 });
 
-app.UseRouting();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapDefaultEndpoints();
 
-var eventBus = app.Services.GetRequiredService<IEventBus>();
-eventBus.Subscribe<ItemChangedIntegrationEvent, ItemChangedIntegrationEventHandler>();
+if (serviceBusEnabled)
+{
+    var eventBus = app.Services.GetRequiredService<IEventBus>();
+    eventBus.Subscribe<ItemChangedIntegrationEvent, ItemChangedIntegrationEventHandler>();
+}
+
 app.Run();
 
 namespace Carting.API

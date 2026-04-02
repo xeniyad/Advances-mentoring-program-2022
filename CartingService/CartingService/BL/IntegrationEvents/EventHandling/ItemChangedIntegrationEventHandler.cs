@@ -9,10 +9,9 @@ public class ItemChangedIntegrationEventHandler : IIntegrationEventHandler<ItemC
 {
     private readonly CartingService _service;
 
-    public ItemChangedIntegrationEventHandler(
-        ICartingRepository repository)
+    public ItemChangedIntegrationEventHandler(CartingService service)
     {
-        _service = new CartingService(repository);
+        _service = service;
     }
 
     public async Task Handle(ItemChangedIntegrationEvent @event)

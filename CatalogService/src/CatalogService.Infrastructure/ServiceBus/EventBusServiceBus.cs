@@ -1,9 +1,9 @@
 ﻿using System.Text;
 using System.Text.Json;
-using Autofac;
 using Azure.Messaging.ServiceBus;
 using Azure.Messaging.ServiceBus.Administration;
 using CatalogService.Core.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace CatalogService.Infrastructure.ServiceBus;
@@ -12,20 +12,19 @@ public class EventBusServiceBus : IEventBus, IHostedService, IDisposable
 {
     private readonly IServiceBusPersisterConnection _serviceBusPersisterConnection;
     private readonly IEventBusSubscriptionsManager _subsManager;
-    private readonly ILifetimeScope _autofac;
+    private readonly IServiceScopeFactory _scopeFactory;
   private readonly string _topicName = "products";
   private readonly string _subscriptionName;
   private ServiceBusSender _sender;
     private ServiceBusProcessor _processor;
-    private readonly string AUTOFAC_SCOPE_NAME = "catalogservice_event_bus";
     private const string INTEGRATION_EVENT_SUFFIX = "IntegrationEvent";
 
     public EventBusServiceBus(IServiceBusPersisterConnection serviceBusPersisterConnection,
-        IEventBusSubscriptionsManager subsManager, ILifetimeScope autofac, string subscriptionClientName)
+        IEventBusSubscriptionsManager subsManager, IServiceScopeFactory scopeFactory, string subscriptionClientName)
     {
         _serviceBusPersisterConnection = serviceBusPersisterConnection;
         _subsManager = subsManager ?? new InMemoryEventBusSubscriptionsManager();
-        _autofac = autofac;
+        _scopeFactory = scopeFactory;
         _subscriptionName = subscriptionClientName;
         _sender = _serviceBusPersisterConnection.TopicClient.CreateSender(_topicName);
         ServiceBusProcessorOptions options = new ServiceBusProcessorOptions { MaxConcurrentCalls = 10, AutoCompleteMessages = false };
@@ -159,20 +158,20 @@ public class EventBusServiceBus : IEventBus, IHostedService, IDisposable
         var processed = false;
         if (_subsManager.HasSubscriptionsForEvent(eventName))
         {
-            var scope = _autofac.BeginLifetimeScope(AUTOFAC_SCOPE_NAME);
+            using var scope = _scopeFactory.CreateScope();
             var subscriptions = _subsManager.GetHandlersForEvent(eventName);
             foreach (var subscription in subscriptions)
             {
                 if (subscription.IsDynamic)
                 {
-                    if (scope.ResolveOptional(subscription.HandlerType) is not IDynamicIntegrationEventHandler handler) continue;
+                    if (scope.ServiceProvider.GetService(subscription.HandlerType) is not IDynamicIntegrationEventHandler handler) continue;
 
                     using dynamic eventData = JsonDocument.Parse(message);
                     await handler.Handle(eventData);
                 }
                 else
                 {
-                    var handler = scope.ResolveOptional(subscription.HandlerType);
+                    var handler = scope.ServiceProvider.GetService(subscription.HandlerType);
                     if (handler == null) continue;
                     var eventType = _subsManager.GetEventTypeByName(eventName);
                     var integrationEvent = JsonSerializer.Deserialize(message, eventType);
