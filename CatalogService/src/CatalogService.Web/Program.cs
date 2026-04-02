@@ -18,11 +18,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
-using Microsoft.Owin.Security.OpenIdConnect;
-using NuGet.Configuration;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -40,12 +35,14 @@ builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 
 builder.Host.UseSerilog((_, config) => config.ReadFrom.Configuration(builder.Configuration));
 
-builder.Services.AddSingleton<IServiceBusPersisterConnection>(sp =>
-{
-  var serviceBusConnectionString = builder.Configuration["EventBusConnection"];
+var serviceBusConnectionString = builder.Configuration["EventBusConnection"];
+var serviceBusEnabled = !string.IsNullOrWhiteSpace(serviceBusConnectionString);
 
-  return new DefaultServiceBusPersisterConnection(serviceBusConnectionString);
-});
+if (serviceBusEnabled)
+{
+  builder.Services.AddSingleton<IServiceBusPersisterConnection>(sp =>
+      new DefaultServiceBusPersisterConnection(serviceBusConnectionString));
+}
 
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
@@ -62,32 +59,39 @@ builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
 
 builder.Services.AddControllersWithViews(options =>
 {
-  var policy = new AuthorizationPolicyBuilder()
-            .RequireAuthenticatedUser()
-            .Build();
-  options.Filters.Add(new AuthorizeFilter(policy)); 
+  if (!builder.Environment.IsDevelopment())
+  {
+    var policy = new AuthorizationPolicyBuilder()
+              .RequireAuthenticatedUser()
+              .Build();
+    options.Filters.Add(new AuthorizeFilter(policy));
+  }
   options.CacheProfiles.Add("Default10",
       new CacheProfile()
       {
         Duration = 10
       });
-}).AddMicrosoftIdentityUI(); 
+}).AddMicrosoftIdentityUI();
 builder.Services.AddRazorPages();
 builder.Services.ConfigureApi();
 builder.Services.AddTransient<ICatalogIntegrationEventService, CatalogIntegrationEventService>();
-builder.Services.AddSingleton<IEventBus, EventBusServiceBus>(sp =>
-{
-  var serviceBusPersisterConnection = sp.GetRequiredService<IServiceBusPersisterConnection>();
-  var iLifetimeScope = sp.GetRequiredService<ILifetimeScope>();
-  var logger = sp.GetRequiredService<ILogger<EventBusServiceBus>>();
-  var eventBusSubcriptionsManager = sp.GetRequiredService<IEventBusSubscriptionsManager>();
-  string subscriptionName = builder.Configuration["SubscriptionClientName"];
-
-  return new EventBusServiceBus(serviceBusPersisterConnection, 
-      eventBusSubcriptionsManager, iLifetimeScope, subscriptionName);
-});
-
 builder.Services.AddSingleton<IEventBusSubscriptionsManager, InMemoryEventBusSubscriptionsManager>();
+
+if (serviceBusEnabled)
+{
+  builder.Services.AddSingleton<EventBusServiceBus>(sp =>
+  {
+    var serviceBusPersisterConnection = sp.GetRequiredService<IServiceBusPersisterConnection>();
+    var iLifetimeScope = sp.GetRequiredService<ILifetimeScope>();
+    var eventBusSubcriptionsManager = sp.GetRequiredService<IEventBusSubscriptionsManager>();
+    string subscriptionName = builder.Configuration["SubscriptionClientName"];
+
+    return new EventBusServiceBus(serviceBusPersisterConnection,
+        eventBusSubcriptionsManager, iLifetimeScope, subscriptionName);
+  });
+  builder.Services.AddSingleton<IEventBus>(sp => sp.GetRequiredService<EventBusServiceBus>());
+  builder.Services.AddHostedService(sp => sp.GetRequiredService<EventBusServiceBus>());
+}
 
 // add list services for diagnostic purposes - see https://github.com/ardalis/AspNetCoreStartupServices
 builder.Services.Configure<ServiceConfig>(config =>
@@ -105,11 +109,7 @@ builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder =>
 });
 
 //builder.Logging.AddAzureWebAppDiagnostics(); add this if deploying to Azure
-builder.Services.AddSwaggerGen(c =>
-{
-  c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
-  c.EnableAnnotations();
-});
+builder.Services.ConfigureSwagger();
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -129,25 +129,16 @@ app.UseCors(builder => builder
      .AllowAnyHeader());
 app.UseHttpsRedirection();
 app.UseRouting();
-
-app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseResponseCaching();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Enable middleware to serve generated Swagger as a JSON endpoint.
-app.UseSwagger();
+app.UseCustomSwagger();
 
-// Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.), specifying the Swagger JSON endpoint.
-app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1"));
-
-app.UseEndpoints(endpoints =>
-{
-  endpoints.MapDefaultControllerRoute();
-  endpoints.MapRazorPages();
-});
+app.MapDefaultControllerRoute();
+app.MapRazorPages();
 
 // Seed Database
 using (var scope = app.Services.CreateScope())

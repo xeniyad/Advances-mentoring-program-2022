@@ -38,9 +38,10 @@ namespace CatalogService.Web.Models.Categories
           .Select(category => CreateCategoryResource(category))
           .ToList();
 
-      var routeName = "GetCategoriesList";
-
-      return new CategoryResourceList(_urlHelper, categoryResources);
+      return (CategoryResourceList)new CategoryResourceList(_urlHelper, categoryResources)
+          .AddGet("self", "GetCategoriesList", new { })
+          .AddPost("create-category", "CreateCategory", new { })
+          .AddOptions("GetCategoryOptions");
     }
   }
 }

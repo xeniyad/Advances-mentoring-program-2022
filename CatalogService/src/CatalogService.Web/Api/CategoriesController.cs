@@ -89,7 +89,7 @@ public class CategoriesController : BaseApiController
   }
 
   [Authorize(Roles = "catalog/update")]
-  [HttpPut(Name = nameof(UpdateCategory))]
+  [HttpPut("{categoryId:int}", Name = nameof(UpdateCategory))]
   [ProducesResponseType(StatusCodes.Status204NoContent)]
   [ProducesResponseType(StatusCodes.Status400BadRequest)]
   [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -97,17 +97,17 @@ public class CategoriesController : BaseApiController
   [ProducesResponseType(StatusCodes.Status415UnsupportedMediaType)]
   [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
   [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-  public async Task<IActionResult> UpdateCategory([FromBody] CategoryForUpdate category)
+  public async Task<IActionResult> UpdateCategory([FromRoute] int categoryId, [FromBody] CategoryForUpdate category)
   {
     var updatedCategory = new Category(
-      category.Id,
+      categoryId,
       category.Name,
       category.ParentId,
       category.Image?.Url);
 
     await _categoryService.UpdateCategory(updatedCategory);
 
-    return Ok();
+    return NoContent();
   }
 
   [Authorize(Roles = "catalog/delete")]
@@ -123,6 +123,6 @@ public class CategoriesController : BaseApiController
     await _itemService.DeleteCategoryItems(categoryId);
     await _categoryService.DeleteCategory(categoryId);
 
-    return Ok();
+    return NoContent();
   }
 }

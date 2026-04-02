@@ -4,10 +4,11 @@ using Autofac;
 using Azure.Messaging.ServiceBus;
 using Azure.Messaging.ServiceBus.Administration;
 using CatalogService.Core.Interfaces;
+using Microsoft.Extensions.Hosting;
 
 namespace CatalogService.Infrastructure.ServiceBus;
 
-public class EventBusServiceBus : IEventBus, IDisposable
+public class EventBusServiceBus : IEventBus, IHostedService, IDisposable
 {
     private readonly IServiceBusPersisterConnection _serviceBusPersisterConnection;
     private readonly IEventBusSubscriptionsManager _subsManager;
@@ -29,9 +30,17 @@ public class EventBusServiceBus : IEventBus, IDisposable
         _sender = _serviceBusPersisterConnection.TopicClient.CreateSender(_topicName);
         ServiceBusProcessorOptions options = new ServiceBusProcessorOptions { MaxConcurrentCalls = 10, AutoCompleteMessages = false };
         _processor = _serviceBusPersisterConnection.TopicClient.CreateProcessor(_topicName, _subscriptionName, options);
+    }
 
+    public async Task StartAsync(CancellationToken cancellationToken)
+    {
         RemoveDefaultRule();
-        RegisterSubscriptionClientMessageHandlerAsync().GetAwaiter().GetResult();
+        await RegisterSubscriptionClientMessageHandlerAsync();
+    }
+
+    public async Task StopAsync(CancellationToken cancellationToken)
+    {
+        await _processor.StopProcessingAsync(cancellationToken);
     }
 
     public void Publish(IntegrationEvent @event)
@@ -134,7 +143,7 @@ public class EventBusServiceBus : IEventBus, IDisposable
     public void Dispose()
     {
         _subsManager.Clear();
-        _processor.CloseAsync().GetAwaiter().GetResult();
+        _processor.DisposeAsync().AsTask().GetAwaiter().GetResult();
     }
 
     private Task ErrorHandler(ProcessErrorEventArgs args)
