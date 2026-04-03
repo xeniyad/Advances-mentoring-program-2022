@@ -1,4 +1,23 @@
+# Build output
 bin
 obj
 TestResults
+
+# Visual Studio
 .vs
+*.csproj.user
+*.user
+
+# Environment-specific config (may contain secrets)
+appsettings.*.json
+
+# Library files managed by LibMan/npm (not committed)
+**/wwwroot/lib/
+
+# Frontend (React/Vite)
+node_modules
+dist
+.env.local
+.env.*.local
+.env.development
+.env.production
