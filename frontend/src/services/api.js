@@ -48,6 +48,9 @@ export const adminApi = {
   deleteCategory: (msal, id) =>
     apiFetch(msal, `/catalog/api/v1/category/${id}`, { method: 'DELETE' }),
 
+  // Enums
+  getCurrencies: (msal) => apiFetch(msal, '/catalog/api/v1/enums/currencies'),
+
   // Items (nested under category)
   getItems: (msal, categoryId) =>
     apiFetch(msal, `/catalog/api/v1/category/${categoryId}/items`),

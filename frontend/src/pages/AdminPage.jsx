@@ -45,10 +45,11 @@ function CategoryForm({ initial, categories, onSave, onCancel }) {
 }
 
 // ---- Item form ----
-function ItemForm({ initial, onSave, onCancel }) {
+function ItemForm({ initial, currencies, onSave, onCancel }) {
   const [name, setName] = useState(initial?.name || '');
   const [description, setDescription] = useState(initial?.description || '');
-  const [price, setPrice] = useState(initial?.price ?? '');
+  const [price, setPrice] = useState(initial?.price?.amount ?? '');
+  const [currency, setCurrency] = useState(initial?.price?.currency ?? (currencies[0]?.value ?? 1));
   const [amount, setAmount] = useState(initial?.amount ?? '');
   const [imageUrl, setImageUrl] = useState(initial?.image?.url || initial?.image || '');
 
@@ -57,7 +58,7 @@ function ItemForm({ initial, onSave, onCancel }) {
     const data = {
       name,
       description: description || null,
-      price: Number(price),
+      price: { amount: Number(price), currency: Number(currency) },
       amount: Number(amount),
       image: imageUrl ? { url: imageUrl } : null,
     };
@@ -74,7 +75,14 @@ function ItemForm({ initial, onSave, onCancel }) {
         </div>
         <div className="form-row">
           <label className="form-label">Price <span className="form-required">*</span></label>
-          <input className="form-input" value={price} onChange={e => setPrice(e.target.value)} type="number" step="0.01" min="0" required placeholder="0.00" />
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <input className="form-input" value={price} onChange={e => setPrice(e.target.value)} type="number" step="0.01" min="0" required placeholder="0.00" />
+            <select className="form-input" style={{ width: 'auto', flexShrink: 0 }} value={currency} onChange={e => setCurrency(e.target.value)}>
+              {currencies.map(c => (
+                <option key={c.value} value={c.value}>{c.name}</option>
+              ))}
+            </select>
+          </div>
         </div>
         <div className="form-row">
           <label className="form-label">Amount in stock</label>
@@ -113,6 +121,7 @@ export default function AdminPage() {
   const [items, setItems] = useState([]);
   const [itemForm, setItemForm] = useState(null);
   const [itemMsg, setItemMsg] = useState(null);
+  const [currencies, setCurrencies] = useState([]);
 
   const loadCategories = () => {
     adminApi.getCategories(instance)
@@ -129,6 +138,11 @@ export default function AdminPage() {
 
   useEffect(() => { loadCategories(); }, [instance]);
   useEffect(() => { loadItems(selectedCatId); }, [selectedCatId, instance]);
+  useEffect(() => {
+    adminApi.getCurrencies(instance)
+      .then(data => setCurrencies(data || []))
+      .catch(() => {});
+  }, [instance]);
 
   // --- Category CRUD ---
   const saveCategory = async (data) => {
@@ -314,6 +328,7 @@ export default function AdminPage() {
               <h3 className="admin-form-title">{itemForm?.id ? 'Edit Item' : 'New Item'}</h3>
               <ItemForm
                 initial={itemForm?.id ? itemForm : null}
+                currencies={currencies}
                 onSave={saveItem}
                 onCancel={() => setItemForm(null)}
               />
@@ -342,7 +357,10 @@ export default function AdminPage() {
                     <tr key={item.id}>
                       <td className="admin-id">{item.id}</td>
                       <td className="admin-name">{item.name}</td>
-                      <td className="cart-item__price">${Number(item.price ?? 0).toFixed(2)}</td>
+                      <td className="cart-item__price">
+                        {Number(item.price?.amount ?? 0).toFixed(2)}{' '}
+                        {currencies.find(c => c.value === item.price?.currency)?.name ?? ''}
+                      </td>
                       <td>{item.amount ?? '—'}</td>
                       <td className="admin-desc">{item.description || <span className="admin-none">—</span>}</td>
                       <td>
