@@ -1,6 +1,5 @@
 ﻿using CatalogService.Core.Interfaces;
 using CatalogService.Core.ProjectAggregate;
-using CatalogService.Core.ValueObjects;
 using Microsoft.AspNetCore.Mvc;
 using CatalogService.Web.Models.Items;
 using CatalogService.Application.Items.Models;
@@ -33,7 +32,7 @@ public class ItemsController : BaseApiController
   {
     Response.Headers.Add("Allow", "GET,OPTIONS,POST,PUT,DELETE");
 
-    return Ok();
+    return NoContent();
   }
 
   [AllowAnonymous]
@@ -125,7 +124,7 @@ public class ItemsController : BaseApiController
       await _intergrationService.PublishThroughEventBusAsync(itemChangedEvent);
     }
 
-    return Ok();
+    return NoContent();
   }
 
   [Authorize(Roles = "catalog/delete")]
@@ -138,6 +137,6 @@ public class ItemsController : BaseApiController
   {
     await _itemService.DeleteItem(itemId);
 
-    return Ok();
+    return NoContent();
   }
 }

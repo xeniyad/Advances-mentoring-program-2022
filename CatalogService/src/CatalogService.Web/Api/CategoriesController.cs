@@ -31,7 +31,7 @@ public class CategoriesController : BaseApiController
   {
     Response.Headers.Add("Allow", "GET,OPTIONS,POST,PUT,DELETE");
 
-    return Ok();
+    return NoContent();
   }
 
   [AllowAnonymous]

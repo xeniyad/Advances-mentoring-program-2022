@@ -82,7 +82,7 @@ namespace Carting.API.Api.Controllers
             var result = await _service.RemoveItemAsync(new Guid(cartId), itemId);
 
             if (result)
-                return Ok();
+                return NoContent();
             else
                 return NotFound();
         }
@@ -152,7 +152,7 @@ namespace Carting.API.Api.Controllers
             var result = await _service.RemoveItemAsync(new Guid(cartId), itemId);
 
             if (result)
-                return Ok();
+                return NoContent();
             else
                 return NotFound();
         }
