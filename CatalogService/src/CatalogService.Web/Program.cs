@@ -31,7 +31,7 @@ builder.Services.AddCors(options =>
  options.AddDefaultPolicy(
                    policy =>
                     {
-                      policy.WithOrigins("https://login.microsoftonline.com/", "https://localhost:7105");
+                      policy.WithOrigins("https://login.microsoftonline.com/", "https://localhost:7105", "https://localhost:5000", "http://localhost:51923");
                     });
 });
 
