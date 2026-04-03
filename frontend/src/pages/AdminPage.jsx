@@ -191,8 +191,8 @@ export default function AdminPage() {
     if (!window.confirm('Delete this item?')) return;
     try {
       await adminApi.deleteItem(instance, selectedCatId, itemId);
+      setItems(prev => prev.filter(item => item.id !== itemId));
       setItemMsg({ type: 'success', text: 'Item deleted.' });
-      loadItems(selectedCatId);
     } catch (err) {
       setItemMsg({ type: 'error', text: err.message });
     }
