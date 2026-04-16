@@ -4,10 +4,12 @@ EXPOSE 5000
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
-COPY ["src/ApiGateway.Web/ApiGateway.Web.csproj", "src/ApiGateway.Web/"]
-RUN dotnet restore "src/ApiGateway.Web/ApiGateway.Web.csproj"
-COPY . .
-WORKDIR "/src/src/ApiGateway.Web"
+COPY ["ApiGateway/src/ApiGateway.Web/ApiGateway.Web.csproj", "ApiGateway/src/ApiGateway.Web/"]
+COPY ["ServiceDefaults/ServiceDefaults.csproj", "ServiceDefaults/"]
+RUN dotnet restore "ApiGateway/src/ApiGateway.Web/ApiGateway.Web.csproj"
+COPY ApiGateway/ ApiGateway/
+COPY ServiceDefaults/ ServiceDefaults/
+WORKDIR "/src/ApiGateway/src/ApiGateway.Web"
 RUN dotnet build "ApiGateway.Web.csproj" -c Release -o /app/build
 
 FROM build AS publish
