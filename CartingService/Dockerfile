@@ -4,11 +4,13 @@ EXPOSE 5002
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
-COPY ["CartingService/Carting.csproj", "CartingService/"]
-COPY ["CartingService.API/Carting.API.csproj", "CartingService.API/"]
-RUN dotnet restore "CartingService.API/Carting.API.csproj"
-COPY . .
-WORKDIR "/src/CartingService.API"
+COPY ["CartingService/CartingService/Carting.csproj", "CartingService/CartingService/"]
+COPY ["CartingService/CartingService.API/Carting.API.csproj", "CartingService/CartingService.API/"]
+COPY ["ServiceDefaults/ServiceDefaults.csproj", "ServiceDefaults/"]
+RUN dotnet restore "CartingService/CartingService.API/Carting.API.csproj"
+COPY CartingService/ CartingService/
+COPY ServiceDefaults/ ServiceDefaults/
+WORKDIR "/src/CartingService/CartingService.API"
 RUN dotnet build "Carting.API.csproj" -c Release -o /app/build
 
 FROM build AS publish
