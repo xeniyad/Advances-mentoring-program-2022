@@ -4,13 +4,15 @@ EXPOSE 5003
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
-COPY ["src/OrderService.Core/OrderService.Core.csproj", "src/OrderService.Core/"]
-COPY ["src/OrderService.Application/OrderService.Application.csproj", "src/OrderService.Application/"]
-COPY ["src/OrderService.Infrastructure/OrderService.Infrastructure.csproj", "src/OrderService.Infrastructure/"]
-COPY ["src/OrderService.Web/OrderService.Web.csproj", "src/OrderService.Web/"]
-RUN dotnet restore "src/OrderService.Web/OrderService.Web.csproj"
-COPY . .
-WORKDIR "/src/src/OrderService.Web"
+COPY ["OrderService/src/OrderService.Core/OrderService.Core.csproj", "OrderService/src/OrderService.Core/"]
+COPY ["OrderService/src/OrderService.Application/OrderService.Application.csproj", "OrderService/src/OrderService.Application/"]
+COPY ["OrderService/src/OrderService.Infrastructure/OrderService.Infrastructure.csproj", "OrderService/src/OrderService.Infrastructure/"]
+COPY ["OrderService/src/OrderService.Web/OrderService.Web.csproj", "OrderService/src/OrderService.Web/"]
+COPY ["ServiceDefaults/ServiceDefaults.csproj", "ServiceDefaults/"]
+RUN dotnet restore "OrderService/src/OrderService.Web/OrderService.Web.csproj"
+COPY OrderService/ OrderService/
+COPY ServiceDefaults/ ServiceDefaults/
+WORKDIR "/src/OrderService/src/OrderService.Web"
 RUN dotnet build "OrderService.Web.csproj" -c Release -o /app/build
 
 FROM build AS publish
