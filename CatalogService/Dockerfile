@@ -4,15 +4,17 @@ EXPOSE 5001
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
-COPY ["src/CatalogService.SharedKernel/CatalogService.SharedKernel.csproj", "src/CatalogService.SharedKernel/"]
-COPY ["src/CatalogService.Core/CatalogService.Core.csproj", "src/CatalogService.Core/"]
-COPY ["src/CatalogService.Application/CatalogService.Application.csproj", "src/CatalogService.Application/"]
-COPY ["src/CatalogService.Infrastructure/CatalogService.Infrastructure.csproj", "src/CatalogService.Infrastructure/"]
-COPY ["src/CatalogService.Web/CatalogService.Web.csproj", "src/CatalogService.Web/"]
-COPY ["Directory.Packages.props", "."]
-RUN dotnet restore "src/CatalogService.Web/CatalogService.Web.csproj"
-COPY . .
-WORKDIR "/src/src/CatalogService.Web"
+COPY ["CatalogService/src/CatalogService.SharedKernel/CatalogService.SharedKernel.csproj", "CatalogService/src/CatalogService.SharedKernel/"]
+COPY ["CatalogService/src/CatalogService.Core/CatalogService.Core.csproj", "CatalogService/src/CatalogService.Core/"]
+COPY ["CatalogService/src/CatalogService.Application/CatalogService.Application.csproj", "CatalogService/src/CatalogService.Application/"]
+COPY ["CatalogService/src/CatalogService.Infrastructure/CatalogService.Infrastructure.csproj", "CatalogService/src/CatalogService.Infrastructure/"]
+COPY ["CatalogService/src/CatalogService.Web/CatalogService.Web.csproj", "CatalogService/src/CatalogService.Web/"]
+COPY ["CatalogService/Directory.Packages.props", "CatalogService/"]
+COPY ["ServiceDefaults/ServiceDefaults.csproj", "ServiceDefaults/"]
+RUN dotnet restore "CatalogService/src/CatalogService.Web/CatalogService.Web.csproj"
+COPY CatalogService/ CatalogService/
+COPY ServiceDefaults/ ServiceDefaults/
+WORKDIR "/src/CatalogService/src/CatalogService.Web"
 RUN dotnet build "CatalogService.Web.csproj" -c Release -o /app/build
 
 FROM build AS publish
