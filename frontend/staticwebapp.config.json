@@ -1,0 +1,23 @@
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": ["/assets/*", "/*.ico", "/*.png", "/*.svg"]
+  },
+  "routes": [
+    {
+      "route": "/catalog/*",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/cart/*",
+      "allowedRoles": ["authenticated"]
+    },
+    {
+      "route": "/orders/*",
+      "allowedRoles": ["authenticated"]
+    }
+  ],
+  "globalHeaders": {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY"
+  }
+}
