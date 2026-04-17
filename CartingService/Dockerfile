@@ -1,6 +1,6 @@
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
-EXPOSE 5002
+EXPOSE 8080
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
@@ -19,5 +19,5 @@ RUN dotnet publish "Carting.API.csproj" -c Release -o /app/publish /p:UseAppHost
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENV ASPNETCORE_URLS=http://+:5002
+ENV ASPNETCORE_URLS=http://+:8080
 ENTRYPOINT ["dotnet", "Carting.API.dll"]
