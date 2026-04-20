@@ -20,15 +20,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+var allowedOrigins = builder.Configuration["AllowedHosts"]?.Split(',')
+    ?? new[] { "http://localhost:3000" };
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
         policy
             .WithOrigins(
-                "http://localhost:51923",   // Frontend
-                "http://localhost:5001",   // CategoriesService
-                "http://localhost:5002",   // CartingService
-                "http://localhost:5003")   // OrderService
+                allowedOrigins) 
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials());
