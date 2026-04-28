@@ -3,6 +3,7 @@ export const msalConfig = {
     clientId: import.meta.env.VITE_AZURE_CLIENT_ID,
     authority: import.meta.env.VITE_AZURE_AUTHORITY,
     redirectUri: import.meta.env.VITE_REDIRECT_URI,
+    knownAuthorities: [import.meta.env.VITE_AZURE_KNOWN_AUTHORITY],
   },
   cache: {
     cacheLocation: 'sessionStorage',
