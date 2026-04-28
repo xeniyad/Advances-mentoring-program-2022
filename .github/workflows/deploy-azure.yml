@@ -2,7 +2,7 @@ name: Build and Deploy to Azure
 
 on:
   push:
-    branches: \\\[main]
+    branches: [ "main" ]
   workflow_dispatch:  # Allow manual trigger
 
 env:
@@ -54,10 +54,21 @@ jobs:
           TAG=${{ github.sha }}
 
           for SERVICE in catalog-service cart-service order-service api-gateway; do
-            az containerapp update \
-              --name $SERVICE \
-              --resource-group ${{ env.RESOURCE_GROUP }} \
-              --image ${ACR_SERVER}/${SERVICE}:${TAG}
+            EXISTS=$(az containerapp show --name $SERVICE --resource-group ${{ env.RESOURCE_GROUP }} --query name -o tsv 2>/dev/null || echo "")
+            if [ -z "$EXISTS" ]; then
+              az containerapp create \
+                --name $SERVICE \
+                --resource-group ${{ env.RESOURCE_GROUP }} \
+                --environment ${{ env.CONTAINER_ENV }} \
+                --image ${ACR_SERVER}/${SERVICE}:${TAG} \
+                --target-port 8080 \
+                --ingress internal
+            else
+              az containerapp update \
+                --name $SERVICE \
+                --resource-group ${{ env.RESOURCE_GROUP }} \
+                --image ${ACR_SERVER}/${SERVICE}:${TAG}
+            fi
           done
 
   deploy-frontend:
