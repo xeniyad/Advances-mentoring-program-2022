@@ -6,7 +6,7 @@ on:
   workflow_dispatch:  # Allow manual trigger
 
 env:
-  RESOURCE_GROUP: rg-mentoring-ecommerce
+  RESOURCE_GROUP: mentoring-ecommerce
   CONTAINER_ENV: mentoring-container-env
   ACR_NAME: ${{ secrets.ACR_NAME }}
 
