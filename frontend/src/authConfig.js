@@ -1,7 +1,7 @@
 export const msalConfig = {
   auth: {
     clientId: 'bb61d1fa-e902-4c6b-b9ed-38e694f34cbb',
-    authority: 'https://mentoringecommerce.b2clogin.com/mentoringecommerce.onmicrosoft.com/B2C_1_signupsignin1'
+    authority: 'https://mentoringecommerce.b2clogin.com/mentoringecommerce.onmicrosoft.com/B2C_1_signupsignin1',
     redirectUri: 'https://calm-pond-0fdf51900.7.azurestaticapps.net',
   },
   cache: {
