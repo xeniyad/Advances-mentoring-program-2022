@@ -18,7 +18,7 @@ export const loginRequest = {
 // Scopes for acquiring an access token targeting the ApiGateway.
 // Must match a scope exposed by the app registration in Azure AD.
 export const apiRequest = {
-  scopes: [`api://${msalConfig.auth.clientId}/access_as_user`],
+  scopes: [import.meta.env.VITE_API_SCOPE],
 };
 
 export const apiConfig = {
