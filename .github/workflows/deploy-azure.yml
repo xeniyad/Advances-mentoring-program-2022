@@ -92,9 +92,10 @@ jobs:
         run: |
           npm ci
           npm run build
-        env:
-          VITE_API_URL: ${{ secrets.API_GATEWAY_URL }}
-          VITE_AUTH_MOCK: "false"
+        # env vars are now set in frontend/.env.production
+        # env:
+        #   VITE_API_URL: ${{ secrets.API_GATEWAY_URL }}
+        #   VITE_AUTH_MOCK: "false"
 
       - name: Deploy to Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
