@@ -12,5 +12,7 @@ appsettings.*.json
 node_modules/
 dist/
 log*.txt
+.env.local
+.env.*.local
 
 AZURE_DEPLOYMENT_PLAN.md
