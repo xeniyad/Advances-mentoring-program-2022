@@ -6,16 +6,18 @@ import { adminApi } from '../services/api';
 function CategoryForm({ initial, categories, onSave, onCancel }) {
   const [name, setName] = useState(initial?.name || '');
   const [parentId, setParentId] = useState(initial?.parentId ?? '');
-  const [imageUrl, setImageUrl] = useState(initial?.image?.url || initial?.image || '');
+  const [imageFile, setImageFile] = useState(null);
+  onst [imagePreview, setImagePreview] = useState(initial?.image?.url || initial?.image || '');
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSave({
-      name,
-      parentId: parentId !== '' ? Number(parentId) : null,
-      image: imageUrl || null,
-    });
-  };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  let resolvedUrl = imageUrl; // existing URL if no new file
+  if (imageFile) {
+    const result = await uploadImage(msal, imageFile);
+    resolvedUrl = result.url;
+  }
+  onSave({ name, parentId, image: resolvedUrl || null });
+};
 
   return (
     <form onSubmit={handleSubmit} className="admin-form">
@@ -33,8 +35,20 @@ function CategoryForm({ initial, categories, onSave, onCancel }) {
         </select>
       </div>
       <div className="form-row">
-        <label className="form-label">Image URL</label>
-        <input className="form-input" value={imageUrl} onChange={e => setImageUrl(e.target.value)} type="url" placeholder="https://example.com/image.jpg" />
+        <label className="form-label">Image</label>
+        {imagePreview && <img src={imagePreview} alt="preview" style={{ height: 60, marginBottom: 8 }} />}
+        <input
+          className="form-input"
+          type="file"
+          accept="image/*"
+          onChange={e => {
+            const file = e.target.files[0];
+            if (file) {
+              setImageFile(file);
+              setImagePreview(URL.createObjectURL(file));
+            }
+          }}
+        />
       </div>
       <div className="form-actions">
         <button type="submit" className="btn btn-primary">Save</button>
@@ -51,16 +65,22 @@ function ItemForm({ initial, currencies, onSave, onCancel }) {
   const [price, setPrice] = useState(initial?.price?.amount ?? '');
   const [currency, setCurrency] = useState(initial?.price?.currency ?? (currencies[0]?.value ?? 1));
   const [amount, setAmount] = useState(initial?.amount ?? '');
-  const [imageUrl, setImageUrl] = useState(initial?.image?.url || initial?.image || '');
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(initial?.image?.url || initial?.image || '');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    let resolvedUrl = imageUrl; // existing URL if no new file
+    if (imageFile) {
+      const result = await uploadImage(msal, imageFile);
+      resolvedUrl = result.url;
+    }
     const data = {
       name,
       description: description || null,
       price: { amount: Number(price), currency: Number(currency) },
       amount: Number(amount),
-      image: imageUrl ? { url: imageUrl } : null,
+      image: resolvedUrl ? { url: resolvedUrl } : null,
     };
     if (initial?.id) data.id = initial.id;
     onSave(data);
@@ -90,7 +110,19 @@ function ItemForm({ initial, currencies, onSave, onCancel }) {
         </div>
         <div className="form-row">
           <label className="form-label">Image URL</label>
-          <input className="form-input" value={imageUrl} onChange={e => setImageUrl(e.target.value)} type="url" placeholder="https://example.com/image.jpg" />
+          {imagePreview && <img src={imagePreview} alt="preview" style={{ height: 60, marginBottom: 8 }} />}
+          <input
+            className="form-input"
+            type="file"
+            accept="image/*"
+            onChange={e => {
+              const file = e.target.files[0];
+              if (file) {
+                setImageFile(file);
+                setImagePreview(URL.createObjectURL(file));
+              }
+            }}
+          />
         </div>
         <div className="form-row form-row--full">
           <label className="form-label">Description</label>

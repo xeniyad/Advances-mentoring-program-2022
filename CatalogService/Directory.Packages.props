@@ -18,6 +18,7 @@
     <!-- Azure -->
     <PackageVersion Include="Azure.Messaging.ServiceBus" Version="7.10.0" />
     <!-- Entity Framework Core -->
+    <PackageVersion Include="Azure.Storage.Blobs" Version="12.27.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.3" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.3" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.3" />

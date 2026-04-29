@@ -57,6 +57,10 @@ public class DefaultInfrastructureModule : Module
       .As<IItemService>()
       .InstancePerLifetimeScope();
 
+    builder.RegisterType<BlobStorageService>()
+      .As<IBlobStorageService>()
+      .InstancePerLifetimeScope();
+
     var mediatrOpenTypes = new[]
     {
       typeof(IRequestHandler<,>),

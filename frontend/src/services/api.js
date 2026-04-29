@@ -17,7 +17,7 @@ async function getToken(msalInstance) {
 async function apiFetch(msalInstance, path, options = {}) {
   const token = await getToken(msalInstance);
   const headers = {
-    'Content-Type': 'application/json',
+    'Content-Type': options.headers?.['Content-Type'] || 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   };
@@ -74,4 +74,15 @@ export const ordersApi = {
   getOrders: (msal) => apiFetch(msal, '/orders'),
   placeOrder: (msal, cartId) =>
     apiFetch(msal, `/orders?cartId=${cartId}`, { method: 'POST' }),
+};
+
+export const uploadImage = (msal, file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  // Note: no Content-Type header — browser sets multipart boundary automatically
+  return apiFetch(msal, '/catalog/api/v1/images', {
+    method: 'POST',
+    body: formData,
+    headers: {'Content-Type': 'multipart/form-data'},  // override default application/json
+  });
 };
