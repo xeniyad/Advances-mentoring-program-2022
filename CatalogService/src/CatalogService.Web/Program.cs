@@ -85,7 +85,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
           }
           else
           {
-            options.Authority = $"{azureAd["Instance"]}{azureAd["TenantId"]}/v2.0";
+            options.Authority = $"{azureAd["Instance"]}{azureAd["Domain"]}/{azureAd["SignUpSignInPolicyId"]}/v2.0";
             options.Audience = azureAd["ClientId"];
             options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
             {
