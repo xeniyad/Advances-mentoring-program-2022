@@ -8,7 +8,7 @@ function CategoryForm({ initial, categories, onSave, onCancel }) {
   const [parentId, setParentId] = useState(initial?.parentId ?? '');
   const [imageUrl, setImageUrl] = useState(initial?.image?.url || initial?.image || '');
   const [imageFile, setImageFile] = useState(null);
-  onst [imagePreview, setImagePreview] = useState(initial?.image?.url || initial?.image || '');
+  const [imagePreview, setImagePreview] = useState(initial?.image?.url || initial?.image || '');
 
 const handleSubmit = async (e) => {
   e.preventDefault();
