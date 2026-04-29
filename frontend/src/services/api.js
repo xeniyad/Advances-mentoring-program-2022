@@ -60,6 +60,16 @@ export const adminApi = {
     apiFetch(msal, `/catalog/api/v1/category/${categoryId}/items`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteItem: (msal, categoryId, itemId) =>
     apiFetch(msal, `/catalog/api/v1/category/${categoryId}/items/${itemId}`, { method: 'DELETE' }),
+  
+  uploadImage: (msal, file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return apiFetch(msal, '/catalog/api/v1/images', {
+      method: 'POST',
+      body: formData,
+      headers: {'Content-Type': ''},  // override default application/json
+    });
+  },
 };
 
 export const cartApi = {
@@ -76,13 +86,3 @@ export const ordersApi = {
     apiFetch(msal, `/orders?cartId=${cartId}`, { method: 'POST' }),
 };
 
-export const uploadImage = (msal, file) => {
-  const formData = new FormData();
-  formData.append('file', file);
-  // Note: no Content-Type header — browser sets multipart boundary automatically
-  return apiFetch(msal, '/catalog/api/v1/images', {
-    method: 'POST',
-    body: formData,
-    headers: {'Content-Type': 'multipart/form-data'},  // override default application/json
-  });
-};

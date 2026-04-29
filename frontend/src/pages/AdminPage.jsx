@@ -6,17 +6,14 @@ import { adminApi } from '../services/api';
 function CategoryForm({ initial, categories, onSave, onCancel }) {
   const [name, setName] = useState(initial?.name || '');
   const [parentId, setParentId] = useState(initial?.parentId ?? '');
+  const [imageUrl, setImageUrl] = useState(initial?.image?.url || initial?.image || '');
   const [imageFile, setImageFile] = useState(null);
   onst [imagePreview, setImagePreview] = useState(initial?.image?.url || initial?.image || '');
 
 const handleSubmit = async (e) => {
   e.preventDefault();
   let resolvedUrl = imageUrl; // existing URL if no new file
-  if (imageFile) {
-    const result = await uploadImage(msal, imageFile);
-    resolvedUrl = result.url;
-  }
-  onSave({ name, parentId, image: resolvedUrl || null });
+  onSave({ name, parentId, image: resolvedUrl || null, imageFile });
 };
 
   return (
@@ -65,22 +62,21 @@ function ItemForm({ initial, currencies, onSave, onCancel }) {
   const [price, setPrice] = useState(initial?.price?.amount ?? '');
   const [currency, setCurrency] = useState(initial?.price?.currency ?? (currencies[0]?.value ?? 1));
   const [amount, setAmount] = useState(initial?.amount ?? '');
+  const [imageUrl, setImageUrl] = useState(initial?.image?.url || initial?.image || '');
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(initial?.image?.url || initial?.image || '');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     let resolvedUrl = imageUrl; // existing URL if no new file
-    if (imageFile) {
-      const result = await uploadImage(msal, imageFile);
-      resolvedUrl = result.url;
-    }
+    
     const data = {
       name,
       description: description || null,
       price: { amount: Number(price), currency: Number(currency) },
       amount: Number(amount),
       image: resolvedUrl ? { url: resolvedUrl } : null,
+      imageFile,
     };
     if (initial?.id) data.id = initial.id;
     onSave(data);
@@ -179,6 +175,10 @@ export default function AdminPage() {
   // --- Category CRUD ---
   const saveCategory = async (data) => {
     try {
+      if (data.imageFile) {
+        const result = await adminApi.uploadImage(instance, data.imageFile);
+        data.image = result.url;
+      }
       if (catForm?.id) {
         await adminApi.updateCategory(instance, catForm.id, data);
       } else {
@@ -206,6 +206,10 @@ export default function AdminPage() {
   // --- Item CRUD ---
   const saveItem = async (data) => {
     try {
+      if (data.imageFile) {
+        const result = await adminApi.uploadImage(instance, data.imageFile);
+        data.image = result.url;
+      }
       if (data.id) {
         await adminApi.updateItem(instance, selectedCatId, data);
       } else {
