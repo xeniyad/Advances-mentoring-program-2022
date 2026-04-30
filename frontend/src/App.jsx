@@ -14,7 +14,7 @@ const useMockAuth = import.meta.env.VITE_AUTH_MOCK === 'true';
 
 const AuthProvider = useMockAuth
   ? MockMsalProvider
-  : ({ children }) => <MsalProvider instance={msalInstance}>{children}</MsalProvider>;
+  : ({ msalInstance, children }) => <MsalProvider instance={msalInstance}>{children}</MsalProvider>;
 
 function RequireAuth({ children }) {
   const { instance } = useMsal();
@@ -32,7 +32,7 @@ function RequireAuth({ children }) {
 
 export default function App({ msalInstance }) {
   return (
-    <AuthProvider>
+    <AuthProvider msalInstance={msalInstance}>
       <BrowserRouter>
         <NavBar />
         <Routes>
