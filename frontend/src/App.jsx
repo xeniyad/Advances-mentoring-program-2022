@@ -10,7 +10,6 @@ import CartPage from './pages/CartPage';
 import OrdersPage from './pages/OrdersPage';
 import AdminPage from './pages/AdminPage';
 
-const msalInstance = new PublicClientApplication(msalConfig);
 const useMockAuth = import.meta.env.VITE_AUTH_MOCK === 'true';
 
 const AuthProvider = useMockAuth
@@ -31,7 +30,7 @@ function RequireAuth({ children }) {
   return children;
 }
 
-export default function App() {
+export default function App({ msalInstance }) {
   return (
     <AuthProvider>
       <BrowserRouter>
