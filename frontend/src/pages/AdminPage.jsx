@@ -177,7 +177,7 @@ export default function AdminPage() {
     try {
       if (data.imageFile) {
         const result = await adminApi.uploadImage(instance, data.imageFile);
-        data.image = result.url;
+        data.image = { url: result.url };
       }
       if (catForm?.id) {
         await adminApi.updateCategory(instance, catForm.id, data);
@@ -208,7 +208,7 @@ export default function AdminPage() {
     try {
       if (data.imageFile) {
         const result = await adminApi.uploadImage(instance, data.imageFile);
-        data.image = result.url;
+        data.image = { url: result.url };
       }
       if (data.id) {
         await adminApi.updateItem(instance, selectedCatId, data);

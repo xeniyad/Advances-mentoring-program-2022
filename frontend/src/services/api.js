@@ -16,10 +16,11 @@ async function getToken(msalInstance) {
 
 async function apiFetch(msalInstance, path, options = {}) {
   const token = await getToken(msalInstance);
+   const isFormData = options.body instanceof FormData;
   const headers = {
-    'Content-Type': options.headers?.['Content-Type'] || 'application/json',
+    ...(!isFormData && { 'Content-Type': options.headers?.['Content-Type'] || 'application/json' }),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    ...options.headers,
+    ...(!isFormData && options.headers),
   };
   const response = await fetch(`${apiConfig.baseUrl}${path}`, { ...options, headers });
   if (!response.ok) {
@@ -67,7 +68,6 @@ export const adminApi = {
     return apiFetch(msal, '/catalog/api/v1/images', {
       method: 'POST',
       body: formData,
-      headers: {'Content-Type': ''},  // override default application/json
     });
   },
 };
