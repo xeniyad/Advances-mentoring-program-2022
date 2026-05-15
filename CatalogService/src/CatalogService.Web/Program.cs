@@ -145,6 +145,15 @@ builder.Services.AddScoped<IItemService, ItemService>();
 builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
 
 
+if (builder.Environment.IsDevelopment())
+{
+  builder.Services.AddScoped<IBlobStorageService, BlobStorageServiceLocal>();
+}
+else
+{
+  builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
+}
+
 //builder.Logging.AddAzureWebAppDiagnostics(); add this if deploying to Azure
 builder.Services.ConfigureSwagger();
 var app = builder.Build();
@@ -170,6 +179,19 @@ app.UseCors(builder => builder
      .AllowAnyMethod()
      .AllowAnyHeader());
 app.UseStaticFiles();
+
+if (app.Environment.IsDevelopment())
+{
+  var uploadsPath = Path.Combine(app.Environment.ContentRootPath,
+      app.Configuration["LocalStorage:FolderPath"] ?? "wwwroot/uploads");
+  Directory.CreateDirectory(uploadsPath);
+  app.UseStaticFiles(new StaticFileOptions
+  {
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(uploadsPath),
+    RequestPath = "/uploads"
+  });
+}
+
 app.UseResponseCaching();
 
 app.UseAuthentication();
