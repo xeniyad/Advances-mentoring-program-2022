@@ -138,11 +138,11 @@ builder.Services.Configure<ServiceConfig>(config =>
 
 
 // Services previously registered via Autofac DefaultInfrastructureModule
+
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<CatalogService.Core.ProjectAggregate.Category>());
 builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IItemService, ItemService>();
-builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
 
 
 if (builder.Environment.IsDevelopment())
