@@ -142,6 +142,8 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Ca
 builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IItemService, ItemService>();
+builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
+
 
 //builder.Logging.AddAzureWebAppDiagnostics(); add this if deploying to Azure
 builder.Services.ConfigureSwagger();
