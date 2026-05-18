@@ -35,8 +35,6 @@ builder.Services.AddCors(options =>
                     });
 });
 
-builder.Host.UseSerilog((_, config) => config.ReadFrom.Configuration(builder.Configuration));
-
 var serviceBusConnectionString = builder.Configuration["EventBusConnection"];
 var serviceBusEnabled = !string.IsNullOrWhiteSpace(serviceBusConnectionString);
 
