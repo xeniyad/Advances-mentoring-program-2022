@@ -151,7 +151,7 @@ if (builder.Environment.IsDevelopment())
 }
 else
 {
-  builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
+  builder.Services.AddSingleton<IBlobStorageService, BlobStorageService>();
 }
 
 //builder.Logging.AddAzureWebAppDiagnostics(); add this if deploying to Azure
