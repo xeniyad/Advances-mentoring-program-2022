@@ -69,7 +69,7 @@ public class ItemsController : BaseApiController
     return Ok(_resourceFactory.CreateItemResource(item, categoryId));
   }
 
-  [Authorize(Roles = "catalog/create")]
+  [Authorize]
   [HttpPost(Name = nameof(CreateItem))]
   [ProducesResponseType(StatusCodes.Status201Created)]
   [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -94,7 +94,7 @@ public class ItemsController : BaseApiController
         value: _resourceFactory.CreateItemResource(createdItem, categoryId));
   }
 
-  [Authorize(Roles = "catalog/update")]
+  [Authorize]
   [HttpPut(Name = nameof(UpdateItem))]
   [ProducesResponseType(StatusCodes.Status200OK)]
   [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -127,7 +127,7 @@ public class ItemsController : BaseApiController
     return NoContent();
   }
 
-  [Authorize(Roles = "catalog/delete")]
+  [Authorize]
   [HttpDelete("{itemId:int}", Name = nameof(DeleteItem))]
   [ProducesResponseType(StatusCodes.Status404NotFound)]
   [ProducesResponseType(StatusCodes.Status401Unauthorized)]
